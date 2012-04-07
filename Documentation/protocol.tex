@@ -1,0 +1,261 @@
+\documentclass{article}
+\usepackage{bytefield}
+\usepackage{hyperref}
+
+\title{CS244B Mazewar Protocol Specification}
+\author{Ned Bass      \texttt{<nedbass@stanford.edu>} \\
+        Prakash Surya \texttt{<me@prakashsurya.com>}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+CS244B Mazewar is a distributed, multiplayer game that allows each
+player to control a rat in a maze. Each player receives points for
+tagging other players with a projectile, and loses points for being
+tagged and shooting projectiles. Due to it's distributed nature, the
+game is fault-tolerant, as players can continuously leave and join the
+game without disrupting other players.
+
+\section{Protocol Description}
+The Mazewar protocol defines the way in which each instance of
+the game communicate over the network, and is intended to be implemented
+over an unreliable transport layer such as UDP. In addition, the
+protocol assumes all players (including new players trying to join) see
+all Mazewar communication sent over the network via multicast. The
+protocol consists of two distinct phases of communication, and a set
+of well defined packet types.
+
+\subsection{The Discovery Phase}
+The discovery phase provides new players the ability to discover any
+currently active game. While in this phase,
+the client does not send any outbound traffic and listens for
+a minimum of 5 seconds for any incoming Mazewar
+traffic from other active players. If there is no incoming traffic
+during this time, it is assumed there isn't a current game being played
+on the network.
+
+\subsection{The Active Phase}
+During the active phase a player is actively participating
+in a Mazewar game. While in this phase, each client is
+capable of sending 5 types of messages; a ``State" message, a
+``Nickname" message, a ``Tagged" message, the ``Tagged Acknowledgment"
+message, and an ``Exit" message.
+
+\section{Packet Definitions}
+The following packet types are defined by the protocol: \\ \\
+\begin{tabular}{|l|p{.7\textwidth}|}
+	\hline
+	Descriptor & Description \\ \hline \hline
+	State      & Communicates position and direction of the rat,
+	             position and direction of the projectile, and
+	             the player's score. \\ \hline
+	Nickname   & Communicates the nickname and GUID. \\ \hline
+	Tagged     & Sent when the local rat has been hit by a remote
+	             rat's projectile. This message must be acknowledged. \\ \hline
+	Tagged ACK & Acknowledge receipt of a tagged packet. \\ \hline
+	Leaving    & Advertises a player leaving the game. \\ \hline
+	Request for Retransmission & Requests a client to retransmit a
+	                             packet \\ \hline
+\end{tabular}
+
+\subsection{Packet Header}
+\begin{figure}[htbp]
+\centering
+	\begin{bytefield}{32}
+		\bitheader{0,7-8,15-16,23-24,31} \\
+		\bitbox{8}{Descriptor} & \bitbox{24}{Must Be Zero} \\
+		\wordbox{2}{Globally Unique Identifier (GUID)} \\
+		\wordbox{2}{Sequence Number}
+	\end{bytefield}
+	\caption{Packet Header}
+\end{figure}
+
+\subsubsection{Descriptor}
+
+\begin{tabular}{|l|l|}
+	\hline
+	Value & Type \\ \hline \hline
+	0 & State packet \\ \hline
+	1 & Nickname packet \\ \hline
+	2 & Tagged packet \\ \hline
+	3 & Tagged ACK \\ \hline
+	4 & Leaving packet \\ \hline
+	5 & Reqest for retransmission packet \\ \hline
+\end{tabular}
+
+\subsubsection{GUID}
+A randomly generated 64 bit identifier used to distinguish clients. This
+is determined upon joining a game and must not change during a single
+session. The probability of a GUID collision is assumed to be
+negligible.
+
+\subsubsection{Sequence Number}
+A monotonically increasing number that uniquely identifies a packet
+transmitted by a client. This must be incremented by one for each packet
+transmitted unless the packet is a retransmission. This can be used for
+detecting out of order packet delivery, dropped packets, and for
+requesting retransmission.
+
+\subsection{State Packet}
+\begin{figure}[htbp]
+\centering
+	\begin{bytefield}{32}
+		\bitheader{0,7-8,15-16,23-24,31} \\
+		\wordbox{5}{Packet Header} \\
+		\bitbox{15}{Rat Position X} & \bitbox{15}{Rat Position Y} &
+			\bitbox{2}{RD} \\
+		\bitbox{15}{Projectile Position X} &
+			\bitbox{15}{Projectile Position Y} &
+			\bitbox{2}{PD} \\
+		\wordbox{1}{Player Score} \\
+		\wordbox{2}{Timestamp} \\
+		\wordbox{2}{Collision Resolution Token (CRT)}
+	\end{bytefield}
+	\caption{State Packet}
+\end{figure}
+
+\subsubsection{Rat Position X, Rat Position Y, and Rat Direction (RD)}
+The maze coordinates of the rat and the direction it is facing.
+
+\subsubsection{Projectile Position X, Projectile Position Y, and
+               Projectile Direction (PD)}
+The maze coordinates of the rat's projectile and the direction it is
+travelling. If no projectile is active, the word containing these
+fields must be \texttt{0xffffffff}.
+
+\subsubsection{Player Score}
+A signed value representing the player's current score.
+
+\subsubsection{Timestamp}
+Represents the global game time the packet was transmitted. See Section
+\ref{ssec:timestamp} for details on game time management.
+
+\subsubsection{Collision Resolution Token}
+A 64 bit value randomly generated for each packet. This is used to
+resolve timing conflicts. See Sections \ref{ssec:collision} and
+\ref{ssec:tagging} for further details.
+
+\subsection{Nickname Packet}
+\begin{figure}[htbp]
+\centering
+	\begin{bytefield}{32}
+		\bitheader{0,7-8,15-16,23-24,31} \\
+		\wordbox{5}{Packet Header} \\
+		\wordbox{8}{Nickname}
+	\end{bytefield}
+	\caption{Nickname Packet}
+\end{figure}
+
+\subsubsection{Nickname}
+A 32 character null terminated string representing the player's
+nickname.
+
+\newpage
+\subsection{Tagged Packet}
+\begin{figure}[htbp]
+\centering
+	\begin{bytefield}{32}
+		\bitheader{0,7-8,15-16,23-24,31} \\
+		\wordbox{5}{Packet Header} \\
+		\wordbox{2}{GUID of Shooter}
+	\end{bytefield}
+	\caption{Tagged Packet}
+\end{figure}
+
+\subsubsection{GUID of Shooter}
+The GUID of the client that tagged the local rat.
+
+\subsection{Tagged Acknowledgment Packet}
+\begin{figure}[htbp]
+\centering
+	\begin{bytefield}{32}
+		\bitheader{0,7-8,15-16,23-24,31} \\
+		\wordbox{5}{Packet Header} \\
+		\wordbox{2}{GUID of Tagged Rat} \\
+		\wordbox{2}{Tagged Packet Sequence Number}
+	\end{bytefield}
+	\caption{Tagged ACK Packet}
+\end{figure}
+
+\subsubsection{GUID of Tagged Rat}
+The GUID of the client being acknowledged.
+
+\subsubsection{Tagged Packet Sequence Number}
+The sequence number of the packet being acknowledged.
+
+\subsection{Leaving Packet}
+\begin{figure}[htbp]
+\centering
+	\begin{bytefield}{32}
+		\bitheader{0,7-8,15-16,23-24,31} \\
+		\wordbox{5}{Packet Header} \\
+		\wordbox{2}{GUID of Leaving Client}
+	\end{bytefield}
+	\caption{Leaving Packet}
+\end{figure}
+
+\subsubsection{GUID of Leaving Client}
+The GUID of the client that is leaving the game.
+
+\subsection{Request for Retransmission Packet}
+\begin{figure}[htbp]
+\centering
+	\begin{bytefield}{32}
+		\bitheader{0,7-8,15-16,23-24,31} \\
+		\wordbox{5}{Packet Header} \\
+		\wordbox{2}{GUID of Requestee} \\
+		\wordbox{2}{Requested Packet Sequence Number} \\
+	\end{bytefield}
+	\caption{Request for Retransmission Packet}
+\end{figure}
+
+\subsubsection{GUID of Requestee}
+The GUID of the client being asked to retransmit.
+
+\subsubsection{Requested Packet Sequence Number}
+The sequence number of the packet being requested.
+
+\section{Timing and Semantics}
+
+\subsection{Player Moves}
+The client must send out a \textit{state packet} to all other players for each
+event causing it to change its local state. Local state includes
+player position and direction, projectile position and direction, and
+score. In addition, it must send at least one state packet every 500ms.
+
+\subsection{Collisions}
+\label{ssec:collision}
+A collision is defined as two or more objects attempting to occupy the
+same cell at the same time. An object may be a rat or a projectile. Two
+events are defined to occur at the \textit{same time} if their
+timestamps are within 250ms of each other.
+
+\subsection{Player Movement Collision Resolution}
+If a collision occurs between two rats, the contended tile will be
+occupied by the rat whose \textit{state packet} contained the lowest CRT. The
+other rat must revert to its previous position.
+
+\subsubsection{Tag Detection}
+\label{ssec:tagging}
+A tag occurs when a projectile collides with a rat. The determination
+that a tag has occurred is made at the tagged client, and this client is
+responsible for notifying the shooter via a \textit{tagged packet}.
+The tagged client must continue to retransmit the \textit{tagged packet}
+every 500ms until an acknowledgement is received or the shooter has left
+the game.
+
+\subsubsection{Contended Tag Resolution}
+If there is ambiguity regarding which remote client tagged the local
+client then method of awarding the tag is implementation defined, so
+long as exactly one shooter is selected.
+
+\subsection{Joining a Game}
+\subsection{Leaving a Game}
+\subsection{Possible Inconsistencies}
+\subsection{Loss of Contact}
+\subsection{Game Time Management}
+\label{ssec:timestamp}
+
+\end{document}
