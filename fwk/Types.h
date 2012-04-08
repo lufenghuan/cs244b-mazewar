@@ -16,6 +16,7 @@ typedef long S32;
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <typeinfo>
 
 #include <assert.h>
 

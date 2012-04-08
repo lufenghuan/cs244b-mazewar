@@ -5,6 +5,7 @@
 
 #include <stdarg.h>
 #include <string>
+#include <cstring>
 #include <fwk/Types.h>
 
 namespace Fwk {
