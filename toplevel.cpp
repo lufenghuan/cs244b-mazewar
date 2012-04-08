@@ -36,7 +36,6 @@ int main(int argc, char *argv[])
 		getName("Welcome to CS244B MazeWar!\n\nYour Name", &ratName);
 
 	M = MazewarInstance::mazewarInstanceNew(string(ratName));
-	MazewarInstance* a = M.ptr();
 	strncpy(M->myName_, ratName, NAMESIZE);
 	free(ratName);
 

@@ -277,7 +277,7 @@ resolveHost(register char *name)
 		bcopy(fhost->h_addr, &sa.sin_addr, fhost->h_length);
 	} else {
 		fadd.s_addr = inet_addr(name);
-		if (fadd.s_addr != -1) {
+		if ((int)fadd.s_addr != -1) {
 			sa.sin_family = AF_INET;	/* grot */
 			sa.sin_port = 0;
 			sa.sin_addr.s_addr = fadd.s_addr;

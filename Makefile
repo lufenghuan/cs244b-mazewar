@@ -37,6 +37,7 @@ SH         = /bin/sh
 
 INC_DIRS   = -I. -I/usr/openwin/include
 FLAGS      = -g -Wall $(INC_DIRS)
+FLAGS     += -Wno-write-strings -Wno-sequence-point
 LIBRARIES  = -lXt -lX11  -lnsl -lICE -lSM
 LIB_DIRS   = -L. -L/usr/X11R6/lib fwk/BaseCollection.o fwk/BaseNotifiee.o fwk/Exception.o
 #Removed -lsocket
