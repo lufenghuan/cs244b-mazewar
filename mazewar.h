@@ -49,6 +49,9 @@ SOFTWARE.
 #include "Nominal.h"
 #include "Exception.h"
 #include <string>
+
+#include "mwexternal.h"
+
 /* fundamental constants */
 
 #ifndef	TRUE
@@ -214,6 +217,8 @@ class MazewarInstance :  public Fwk::NamedInterface  {
 
     MazeType maze_;
     RatName myName_;
+
+    mw_state_t *state;
 protected:
 	MazewarInstance(string s) : Fwk::NamedInterface(s), dir_(0), dirPeek_(0), myRatId_(0), score_(0),
 		xloc_(1), yloc_(3), xPeek_(0), yPeek_(0) {
@@ -221,7 +226,16 @@ protected:
 		if(!myAddr_) {
 			printf("Error allocating sockaddr variable");
 		}
+
+		int rc = mws_cons(&state);
+		if (rc) {
+			/* XXX: This should really be fatal */
+			printf("Error constructing state (rc = %i)\n", rc);
+		}
 	}
+
+	/* XXX: No destructor? */
+
 	Direction	dir_;
     Direction dirPeek_;
 
@@ -245,6 +259,21 @@ extern MazewarInstance::Ptr M;
 #define MY_DIR			M->dir().value()
 #define MY_X_LOC		M->xloc().value()
 #define MY_Y_LOC		M->yloc().value()
+
+static inline mw_dir_t my_mw_dir_t()
+{
+	short dir = MY_DIR;
+	if (dir == NORTH)
+		return MW_DIR_NORTH;
+	else if (dir == SOUTH)
+		return MW_DIR_SOUTH;
+	else if (dir == EAST)
+		return MW_DIR_EAST;
+	else
+		return MW_DIR_WEST;
+}
+
+#define MY_MW_DIR_T		my_mw_dir_t()
 
 /* events */
 

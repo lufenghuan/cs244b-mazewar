@@ -56,6 +56,7 @@ dummytarget: mwar
 #
 
 APP_OBJS   = toplevel.o display.o init.o winsys.o
+APP_OBJS  += mwstate.o mwmissile.o
 APP = mazewar
 
 $(APP): $(APP_OBJS)
