@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
+#include <time.h>
 
 #define ASSERT(x) assert((x))
 
@@ -24,6 +25,9 @@ typedef struct mw_missile {
 	mw_pos_t         mwm_x_pos;
 	mw_pos_t         mwm_y_pos;
 	mw_dir_t         mwm_dir;
+
+	struct timeval   mwm_timeout;
+	struct timeval   mwm_lasttime;
 } mw_missile_t;
 
 /* Mazewar Missile Constructor
@@ -39,6 +43,7 @@ int mwm_cons(mw_missile_t **m, mw_missile_id_t *id,
 int mwm_dest(mw_missile_t *m);
 
 void mwm_render(const mw_missile_t *m);
+void mwm_update(mw_missile_t *m);
 
 #endif /* _MW_INTERNAL_H */
 

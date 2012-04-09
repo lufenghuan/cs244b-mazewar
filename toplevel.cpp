@@ -134,6 +134,8 @@ play(void)
 
 		DoViewUpdate();
 
+		mws_update(M->state);
+
 		/* Any info to send over network? */
 
 	}
@@ -436,9 +438,10 @@ void manageMissiles()
 
 void DoViewUpdate()
 {
+	mws_render(M->state);
+
 	if (updateView) {	/* paint the screen */
 
-		mws_render(M->state);
 
 		ShowPosition(MY_X_LOC, MY_Y_LOC, MY_DIR);
 		if (M->peeking())

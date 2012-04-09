@@ -9,8 +9,6 @@ mws_cons(mw_state_t **s)
 {
 	mw_state_t *tmp;
 
-	ASSERT(s != NULL);
-
 	tmp = (mw_state_t *)malloc(sizeof(mw_state_t));
 	if (tmp == NULL)
 		return -ENOMEM;
@@ -48,11 +46,23 @@ void mws_render(const mw_state_t *s)
 {
 	mw_missile_t *m;
 
-	ASSERT(s != NULL);
-
 	list_for_each_entry(m, &s->mws_missiles, mwm_list) {
 		mwm_render(m);
 	}
 }
+
+static void __mws_update_missiles(mw_state_t *s)
+{
+	mw_missile_t *m;
+	list_for_each_entry(m, &s->mws_missiles, mwm_list) {
+		mwm_update(m);
+	}
+}
+
+void mws_update(mw_state_t *s)
+{
+	__mws_update_missiles(s);
+}
+
 
 /* vim: set tabstop=8 shiftwidth=8 noexpandtab: */

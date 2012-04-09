@@ -38,6 +38,8 @@ int mws_add_missile(mw_state_t *s, mw_missile_id_t *id,
 /* Render the mw_state_t structure */
 void mws_render(const mw_state_t *s);
 
+void mws_update(mw_state_t *s);
+
 #endif /* _MW_EXTERNAL_H */
 
 /* vim: set tabstop=8 shiftwidth=8 noexpandtab: */
