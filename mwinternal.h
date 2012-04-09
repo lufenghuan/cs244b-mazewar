@@ -28,6 +28,9 @@ typedef struct mw_missile {
 
 	struct timeval   mwm_timeout;
 	struct timeval   mwm_lasttime;
+
+	mw_pos_t         mwm_x_wipe;
+	mw_pos_t         mwm_y_wipe;
 } mw_missile_t;
 
 /* Mazewar Missile Constructor
@@ -42,7 +45,8 @@ int mwm_cons(mw_missile_t **m, mw_missile_id_t *id,
 /* Mazewar Missile Destructor */
 int mwm_dest(mw_missile_t *m);
 
-void mwm_render(const mw_missile_t *m);
+void mwm_render_wipe(const mw_missile_t *m);
+void mwm_render_draw(const mw_missile_t *m);
 void mwm_update(mw_missile_t *m);
 
 #endif /* _MW_INTERNAL_H */

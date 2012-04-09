@@ -438,7 +438,14 @@ void manageMissiles()
 
 void DoViewUpdate()
 {
-	mws_render(M->state);
+	mws_render_wipe(M->state);
+	mws_render_draw(M->state);
+
+	/* XXX: Hack. I don't want to deal with setting updateView in
+	 *      the mws_* methods, thus just always update view, even
+	 *      if it is unnecessary.
+	 */
+	updateView = TRUE;
 
 	if (updateView) {	/* paint the screen */
 

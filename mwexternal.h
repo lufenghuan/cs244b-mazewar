@@ -35,8 +35,8 @@ int mws_dest(mw_state_t *s);
 int mws_add_missile(mw_state_t *s, mw_missile_id_t *id,
                     mw_pos_t x, mw_pos_t y, mw_dir_t dir);
 
-/* Render the mw_state_t structure */
-void mws_render(const mw_state_t *s);
+void mws_render_wipe(const mw_state_t *s);
+void mws_render_draw(const mw_state_t *s);
 
 void mws_update(mw_state_t *s);
 
