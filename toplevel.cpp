@@ -45,8 +45,14 @@ int main(int argc, char *argv[])
 
 	MazeInit(argc, argv);
 
-	/* XXX: This is called in MazeInit, is it needed here too? */
+	/* TODO: Keep track of rat IDs */
+	mws_add_rat(M->state, NULL, MY_X_LOC, MY_Y_LOC, MY_MW_DIR_T,
+	                      M->myName_);
+
+	/* XXX: This is called in MazeInit, is it needed here too?
+	 *      Disabling until further understood why it's here.
      NewPosition(M);
+	 */
 
  	/* So you can see what a Rat is supposed to look like, we create
  	   one rat at the following location: (1,5)

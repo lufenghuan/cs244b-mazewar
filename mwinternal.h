@@ -13,10 +13,24 @@
 #include <assert.h>
 #include <time.h>
 
+/* For rendering functions, direction macros, etc. */
+#include "mazewar.h"
+
+/* XXX: Can't '#include "display.h"' because of "multiple definition"
+ *      errors. Ideally, the header files should only provide 'extern'
+ *      declarations and not actual definitions. To get around this,
+ *      since I need access to a couple variables from that file, I
+ *      removed the static modifiers for those variables, and add extern
+ *      declarations here. Sigh..
+ */
+extern BitCell normalArrows[NDIRECTION];
+extern BitCell missile[1];
+
 #define ASSERT(x) assert((x))
 
 typedef struct mw_state {
 	struct list_head mws_missiles;
+	struct list_head mws_rats;
 } mw_state_t;
 
 typedef struct mw_missile {
@@ -39,15 +53,39 @@ typedef struct mw_missile {
  * @y   : Starting y position of missile
  * @dir : Starting direction of missile
  */
-int mwm_cons(mw_missile_t **m, mw_missile_id_t *id,
-             mw_pos_t x, mw_pos_t y, mw_dir_t dir);
-
-/* Mazewar Missile Destructor */
-int mwm_dest(mw_missile_t *m);
-
+int  mwm_cons(mw_missile_t **m, mw_missile_id_t *id,
+              mw_pos_t x, mw_pos_t y, mw_dir_t dir);
+int  mwm_dest(mw_missile_t *m);
 void mwm_render_wipe(const mw_missile_t *m);
 void mwm_render_draw(const mw_missile_t *m);
 void mwm_update(mw_missile_t *m);
+
+typedef struct mw_rat {
+	struct list_head  mwr_list;
+	mw_rat_id_t       mwr_id;
+	mw_pos_t          mwr_x_pos;
+	mw_pos_t          mwr_y_pos;
+	mw_dir_t          mwr_dir;
+	char             *mwr_name;
+
+	mw_pos_t         mwr_x_wipe;
+	mw_pos_t         mwr_y_wipe;
+} mw_rat_t;
+
+/* Mazewar Rat Constructor
+ * Add a missile to the state
+ * @id   : Unique ID number of the added rat
+ * @x    : Starting x position of rat
+ * @y    : Starting y position of rat
+ * @dir  : Starting direction of rat
+ * @name : Starting name of the rat
+ */
+int  mwr_cons(mw_rat_t **r, mw_rat_id_t *id,
+              mw_pos_t x, mw_pos_t y, mw_dir_t dir,
+              const char *name);
+int  mwr_dest(mw_rat_t *r);
+void mwr_render_wipe(const mw_rat_t *r);
+void mwr_render_draw(const mw_rat_t *r);
 
 #endif /* _MW_INTERNAL_H */
 

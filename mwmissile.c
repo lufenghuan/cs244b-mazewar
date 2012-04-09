@@ -7,20 +7,6 @@
 /* For rendering functions (i.e. HackMazeBitmap) */
 #include "mazewar.h"
 
-/* XXX: Can't '#include "display.h"' because of "multiple definition"
- *      errors. Ideally, the header files should only provide 'extern'
- *      declarations and not actual definitions. To get around this,
- *      since I need access to 'missile', I removed the static modifier
- *      from 'missile' and added an extern declaration here. </hack>
- */
-extern BitCell missile[1];
-
-/* XXX: This should really be in the same file as 'missile', and
- *      included that way. Since that is not the case, it's
- *      unfortunately hacked in here.
- */
-static BitCell empty = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
-
 /* Global counter used to uniquely assign ID numbers to missiles */
 static mw_missile_id_t mw_missile_count = 0;
 
@@ -63,8 +49,6 @@ mwm_cons(mw_missile_t **m, mw_missile_id_t *id,
 {
 	mw_missile_t *tmp;
 
-	ASSERT(m != NULL);
-
 	tmp = (mw_missile_t *)malloc(sizeof(mw_missile_t));
 	if (tmp == NULL)
 		return -ENOMEM;
@@ -104,6 +88,12 @@ mwm_dest(mw_missile_t *m)
 	free(m);
 	return 0;
 }
+
+/* XXX: This should really be in the same file as the other BitCell's,
+ *      and be included that way. Since that is not the case, it's
+ *      unfortunately hacked in here.
+ */
+static BitCell empty = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
 
 void
 mwm_render_wipe(const mw_missile_t *m)

@@ -12,7 +12,6 @@ RatApp_type 		Rats2Display;
  */
 
 
-static
 BitCell	normalArrows[NDIRECTION] = {
       { {  0,	0200,	0300,	0340,	/* right */
 	0360,	0370,	0177774,0177776,

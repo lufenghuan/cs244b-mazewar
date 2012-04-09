@@ -14,6 +14,7 @@ mws_cons(mw_state_t **s)
 		return -ENOMEM;
 
 	INIT_LIST_HEAD(&tmp->mws_missiles);
+	INIT_LIST_HEAD(&tmp->mws_rats);
 
 	*s = tmp;
 	return 0;
@@ -23,6 +24,7 @@ int
 mws_dest(mw_state_t *s)
 {
 	ASSERT(list_empty(&s->mws_missiles));
+	ASSERT(list_empty(&s->mws_rats));
 	free(s);
 	return 0;
 }
@@ -42,11 +44,33 @@ mws_add_missile(mw_state_t *s, mw_missile_id_t *id,
 	return 0;
 }
 
+int
+mws_add_rat(mw_state_t *s, mw_rat_id_t *id,
+            mw_pos_t x, mw_pos_t y, mw_dir_t dir,
+            const char *name)
+{
+	mw_rat_t *r;
+	int rc;
+
+	rc = mwr_cons(&r, id, x, y, dir, name);
+
+	if (rc)
+		return rc;
+
+	list_add_tail(&r->mwr_list, &s->mws_rats);
+	return 0;
+}
+
 void mws_render_wipe(const mw_state_t *s)
 {
 	mw_missile_t *m;
 	list_for_each_entry(m, &s->mws_missiles, mwm_list) {
 		mwm_render_wipe(m);
+	}
+
+	mw_rat_t *r;
+	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+		mwr_render_wipe(r);
 	}
 }
 
@@ -56,6 +80,12 @@ void mws_render_draw(const mw_state_t *s)
 	list_for_each_entry(m, &s->mws_missiles, mwm_list) {
 		mwm_render_draw(m);
 	}
+
+	mw_rat_t *r;
+	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+		mwr_render_draw(r);
+	}
+
 }
 
 static void __mws_update_missiles(mw_state_t *s)
