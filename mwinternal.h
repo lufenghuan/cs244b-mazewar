@@ -38,6 +38,8 @@ int mwm_cons(mw_missile_t **m, mw_missile_id_t *id,
 /* Mazewar Missile Destructor */
 int mwm_dest(mw_missile_t *m);
 
+void mwm_render(const mw_missile_t *m);
+
 #endif /* _MW_INTERNAL_H */
 
 /* vim: set tabstop=8 shiftwidth=8 noexpandtab: */

@@ -51,6 +51,7 @@ SOFTWARE.
 #include <string>
 
 #include "mwexternal.h"
+#include "main.h"
 
 /* fundamental constants */
 

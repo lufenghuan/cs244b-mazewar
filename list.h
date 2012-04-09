@@ -6,10 +6,18 @@
 #define _LIST_H
 
 #include <stdlib.h>
+#include <stddef.h>
 
 struct list_head {
 	struct list_head *next, *prev;
 };
+
+#define container_of(ptr, type, member) ({			\
+	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
+	(type *)( (char *)__mptr - offsetof(type,member) );})
+
+#define list_entry(ptr, type, member) \
+	container_of(ptr, type, member)
 
 static inline void INIT_LIST_HEAD(struct list_head *list)
 {
@@ -52,6 +60,11 @@ static inline int list_empty(const struct list_head *head)
 {
 	return head->next == head;
 }
+
+#define list_for_each_entry(pos, head, member)				\
+	for (pos = list_entry((head)->next, typeof(*pos), member);	\
+	     &pos->member != (head); 	\
+	     pos = list_entry(pos->member.next, typeof(*pos), member))
 
 #endif /* _LIST_H */
 

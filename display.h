@@ -32,7 +32,6 @@ BitCell	normalArrows[NDIRECTION] = {
 	01740,	01740,	01740,	01740	} }
 };
 
-static
 BitCell	missile[1] = {
 		{ {  0000,	0000,	0000,	0000,
 	    	 0000,	0000,	01700,	01700,

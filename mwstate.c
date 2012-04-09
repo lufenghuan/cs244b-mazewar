@@ -25,9 +25,6 @@ int
 mws_dest(mw_state_t *s)
 {
 	ASSERT(list_empty(&s->mws_missiles));
-
-	/* XXX: Memory Leak. Need to call mwm_dest on each missile. */
-
 	free(s);
 	return 0;
 }
@@ -45,6 +42,17 @@ mws_add_missile(mw_state_t *s, mw_missile_id_t *id,
 
 	list_add_tail(&m->mwm_list, &s->mws_missiles);
 	return 0;
+}
+
+void mws_render(const mw_state_t *s)
+{
+	mw_missile_t *m;
+
+	ASSERT(s != NULL);
+
+	list_for_each_entry(m, &s->mws_missiles, mwm_list) {
+		mwm_render(m);
+	}
 }
 
 /* vim: set tabstop=8 shiftwidth=8 noexpandtab: */

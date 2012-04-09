@@ -4,6 +4,17 @@
 
 #include "mwinternal.h"
 
+/* For rendering functions (i.e. HackMazeBitmap) */
+#include "mazewar.h"
+
+/* XXX: Can't '#include "display.h"' because of "multiple definition"
+ *      errors. Ideally, the header files should only provide 'extern'
+ *      declarations and not actual definitions. To get around this,
+ *      since I need access to 'missile', I removed the static modifier
+ *      from 'missile' and added an extern declaration here. </hack>
+ */
+extern BitCell missile[1];
+
 /* Global counter used to uniquely assign ID numbers to missiles */
 static mw_missile_id_t mw_missile_count = 0;
 
@@ -40,6 +51,12 @@ mwm_dest(mw_missile_t *m)
 
 	free(m);
 	return 0;
+}
+
+void
+mwm_render(const mw_missile_t *m)
+{
+	HackMazeBitmap(Loc(m->mwm_x_pos), Loc(m->mwm_y_pos), &missile[0]);
 }
 
 /* vim: set tabstop=8 shiftwidth=8 noexpandtab: */

@@ -437,6 +437,9 @@ void manageMissiles()
 void DoViewUpdate()
 {
 	if (updateView) {	/* paint the screen */
+
+		mws_render(M->state);
+
 		ShowPosition(MY_X_LOC, MY_Y_LOC, MY_DIR);
 		if (M->peeking())
 			ShowView(M->xPeek(), M->yPeek(), M->dirPeek());
