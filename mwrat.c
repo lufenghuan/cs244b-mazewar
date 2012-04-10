@@ -73,3 +73,37 @@ mwr_render_draw(const mw_rat_t *r)
 	HackMazeBitmap(Loc(r->mwr_x_pos), Loc(r->mwr_y_pos),
 	               &normalArrows[r->mwr_dir]);
 }
+
+int
+mwr_cmp_id(mw_rat_t *r, mw_rat_id_t id)
+{
+	if (r->mwr_id > id)
+		return 1;
+	else if (r->mwr_id < id)
+		return -1;
+	else
+		return 0;
+}
+
+int
+mwr_set_xpos(mw_rat_t *r, mw_pos_t x)
+{
+	r->mwr_x_wipe = r->mwr_x_pos;
+	r->mwr_x_pos  = x;
+	return 0;
+}
+
+int
+mwr_set_ypos(mw_rat_t *r, mw_pos_t y)
+{
+	r->mwr_y_wipe = r->mwr_y_pos;
+	r->mwr_y_pos  = y;
+	return 0;
+}
+
+int
+mwr_set_dir(mw_rat_t *r, mw_dir_t dir)
+{
+	r->mwr_dir = dir;
+	return 0;
+}

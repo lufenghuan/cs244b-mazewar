@@ -24,7 +24,7 @@ typedef struct mw_state mw_state_t;
 /* Mazewar State Constructor */
 int mws_cons(mw_state_t **s);
 
-/* Mazeware State Destructor */
+/* Mazewar State Destructor */
 int mws_dest(mw_state_t *s);
 
 /* Add a missile to the state
@@ -51,6 +51,10 @@ void mws_render_wipe(const mw_state_t *s);
 void mws_render_draw(const mw_state_t *s);
 
 void mws_update(mw_state_t *s);
+
+int mws_set_rat_xpos(mw_state_t *s, mw_rat_id_t id, mw_pos_t x);
+int mws_set_rat_ypos(mw_state_t *s, mw_rat_id_t id, mw_pos_t y);
+int mws_set_rat_dir(mw_state_t *s, mw_rat_id_t id, mw_dir_t dir);
 
 #endif /* _MW_EXTERNAL_H */
 

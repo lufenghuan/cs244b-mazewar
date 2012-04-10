@@ -219,7 +219,8 @@ class MazewarInstance :  public Fwk::NamedInterface  {
     MazeType maze_;
     RatName myName_;
 
-    mw_state_t *state;
+    mw_state_t  *state;
+    mw_rat_id_t  local_id;
 protected:
 	MazewarInstance(string s) : Fwk::NamedInterface(s), dir_(0), dirPeek_(0), myRatId_(0), score_(0),
 		xloc_(1), yloc_(3), xPeek_(0), yPeek_(0) {

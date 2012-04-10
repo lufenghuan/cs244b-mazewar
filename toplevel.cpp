@@ -45,8 +45,7 @@ int main(int argc, char *argv[])
 
 	MazeInit(argc, argv);
 
-	/* TODO: Keep track of rat IDs */
-	mws_add_rat(M->state, NULL, MY_X_LOC, MY_Y_LOC, MY_MW_DIR_T,
+	mws_add_rat(M->state, &M->local_id, MY_X_LOC, MY_Y_LOC, MY_MW_DIR_T,
 	                      M->myName_);
 
 	/* XXX: This is called in MazeInit, is it needed here too?
@@ -157,6 +156,7 @@ void
 aboutFace(void)
 {
 	M->dirIs(_aboutFace[MY_DIR]);
+	mws_set_rat_dir(M->state, M->local_id, MY_MW_DIR_T);
 	updateView = TRUE;
 }
 
@@ -166,6 +166,7 @@ void
 leftTurn(void)
 {
 	M->dirIs(_leftTurn[MY_DIR]);
+	mws_set_rat_dir(M->state, M->local_id, MY_MW_DIR_T);
 	updateView = TRUE;
 }
 
@@ -175,6 +176,7 @@ void
 rightTurn(void)
 {
 	M->dirIs(_rightTurn[MY_DIR]);
+	mws_set_rat_dir(M->state, M->local_id, MY_MW_DIR_T);
 	updateView = TRUE;
 }
 
@@ -201,6 +203,9 @@ forward(void)
 		M->ylocIs(Loc(ty));
 		updateView = TRUE;
 	}
+
+	mws_set_rat_xpos(M->state, M->local_id, MY_X_LOC);
+	mws_set_rat_ypos(M->state, M->local_id, MY_Y_LOC);
 }
 
 /* ----------------------------------------------------------------------- */
@@ -223,6 +228,9 @@ void backward()
 		M->ylocIs(Loc(ty));
 		updateView = TRUE;
 	}
+
+	mws_set_rat_xpos(M->state, M->local_id, MY_X_LOC);
+	mws_set_rat_ypos(M->state, M->local_id, MY_Y_LOC);
 }
 
 /* ----------------------------------------------------------------------- */
@@ -456,7 +464,10 @@ void DoViewUpdate()
 	if (updateView) {	/* paint the screen */
 
 
+		/* XXX: I don't think this is necessary anymore as the
+		 *      mws_render_* functions take care of it.
 		ShowPosition(MY_X_LOC, MY_Y_LOC, MY_DIR);
+		 */
 		if (M->peeking())
 			ShowView(M->xPeek(), M->yPeek(), M->dirPeek());
 		else

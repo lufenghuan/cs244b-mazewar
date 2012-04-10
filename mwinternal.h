@@ -86,6 +86,10 @@ int  mwr_cons(mw_rat_t **r, mw_rat_id_t *id,
 int  mwr_dest(mw_rat_t *r);
 void mwr_render_wipe(const mw_rat_t *r);
 void mwr_render_draw(const mw_rat_t *r);
+int  mwr_cmp_id(mw_rat_t *r, mw_rat_id_t id);
+int  mwr_set_xpos(mw_rat_t *r, mw_pos_t x);
+int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
+int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
 
 #endif /* _MW_INTERNAL_H */
 

@@ -101,5 +101,46 @@ void mws_update(mw_state_t *s)
 	__mws_update_missiles(s);
 }
 
+static mw_rat_t *__mws_get_rat(mw_state_t *s, mw_rat_id_t id)
+{
+	/* XXX: Yes, this is bad, and slow, and ugly; but it's simple. */
+	mw_rat_t *r;
+	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+		if (mwr_cmp_id(r, id) == 0)
+			return r;
+	}
+
+	return NULL;
+}
+
+int mws_set_rat_xpos(mw_state_t *s, mw_rat_id_t id, mw_pos_t x)
+{
+	mw_rat_t *r = __mws_get_rat(s, id);
+
+	if (r == NULL)
+		return -1;
+
+	return mwr_set_xpos(r, x);
+}
+
+int mws_set_rat_ypos(mw_state_t *s, mw_rat_id_t id, mw_pos_t y)
+{
+	mw_rat_t *r = __mws_get_rat(s, id);
+
+	if (r == NULL)
+		return -1;
+
+	return mwr_set_ypos(r, y);
+}
+
+int mws_set_rat_dir(mw_state_t *s, mw_rat_id_t id, mw_dir_t dir)
+{
+	mw_rat_t *r = __mws_get_rat(s, id);
+
+	if (r == NULL)
+		return -1;
+
+	return mwr_set_dir(r, dir);
+}
 
 /* vim: set tabstop=8 shiftwidth=8 noexpandtab: */
