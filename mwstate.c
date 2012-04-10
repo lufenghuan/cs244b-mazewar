@@ -50,14 +50,60 @@ mws_set_maze(mw_state_t *s, int **maze, int xmax, int ymax)
 	s->mws_ymax = ymax;
 }
 
+void
+__mws_xpos_plus_dir(mw_pos_t *xnew, mw_pos_t xold, mw_dir_t dir)
+{
+	/* "North" is defined to be to the right, positive X direction */
+	switch(dir) {
+	case MW_DIR_NORTH:
+		*xnew = xold + 1;
+		break;
+	case MW_DIR_SOUTH:
+		*xnew = xold - 1;
+		break;
+	default:
+		*xnew = xold;
+		break;
+	}
+}
+
+void
+__mws_ypos_plus_dir(mw_pos_t *ynew, mw_pos_t yold, mw_dir_t dir)
+{
+	/* "North" is defined to be to the right, positive X direction */
+	switch(dir) {
+	case MW_DIR_EAST:
+		*ynew = yold + 1;
+		break;
+	case MW_DIR_WEST:
+		*ynew = yold - 1;
+		break;
+	default:
+		*ynew = yold;
+		break;
+	}
+}
+
 int
 mws_add_missile(mw_state_t *s, mw_missile_id_t *id,
                 mw_pos_t x, mw_pos_t y, mw_dir_t dir)
 {
 	mw_missile_t *m;
+	mw_pos_t xnew, ynew;
 	int rc;
 
-	rc = mwm_cons(&m, id, x, y, dir);
+	/* The position passed in here is the position of the rat when
+	 * the shot was fired. The missile needs to be constructed in
+	 * front of the rat, thus we need to calculate it's new position
+	 */
+	__mws_xpos_plus_dir(&xnew, x, dir);
+	__mws_ypos_plus_dir(&ynew, y, dir);
+
+	/* 1 == wall at position, missile shot directly into wall. */
+	if (s->mws_maze[xnew][ynew] == 1)
+		return 0;
+
+	rc = mwm_cons(&m, id, xnew, ynew, dir);
 	if (rc)
 		return rc;
 

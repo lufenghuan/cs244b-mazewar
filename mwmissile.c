@@ -60,16 +60,6 @@ mwm_cons(mw_missile_t **m, mw_missile_id_t *id,
 	tmp->mwm_y_pos = tmp->mwm_y_wipe = y;
 	tmp->mwm_dir   = dir;
 
-	/* XXX: The position passed into the constructor is the position
-	 *      of the rat when the shot was fired. Thus, the missile is
-	 *      not visible until it moves one unit away from the rat's
-	 *      position (because it is rendered on the same tile as the
-	 *      rat, but underneath it). As a hack, move the missile one
-	 *      unit in the direction it is pointing to get it out from
-	 *      under the rat.
-	 */
-	__mwm_update_position(tmp);
-
 	__mwm_init_timeout(&tmp->mwm_timeout);
 	gettimeofday(&tmp->mwm_lasttime, NULL);
 
