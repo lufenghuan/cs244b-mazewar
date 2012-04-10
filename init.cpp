@@ -41,6 +41,8 @@ SOFTWARE.
 
 #include "unistd.h"
 
+#include "mwexternal.h"
+
 static char rstate[32];
 
 static const MazeType mazeBits = {
@@ -119,15 +121,24 @@ getMaze(void)
 {
 	int i, j;
 
+	/* XXX: should be fatal if any of these malloc's fail */
+	int **maze = (int **)malloc(MAZEXMAX * sizeof(int*));
+	for (i = 0; i < MAZEXMAX; i++)
+		maze[i] = (int *)malloc(MAZEYMAX * sizeof(int));
+
 	for (i = 0; i < MAZEXMAX; i++){
 		for (j = 0; j < MAZEYMAX; j++){
 			if (mazeBits[i][MAZEYMAX-1 - j] == 1){
 				M->maze_[i][j] = TRUE;
+				maze[i][j] = 1;
 			}else{
 				M->maze_[i][j] = FALSE;
+				maze[i][j] = 0;
 			}
 		}
 	}
+
+	mws_set_maze(M->state, maze, MAZEXMAX, MAZEYMAX);
 }
 
 /* ----------------------------------------------------------------------- */

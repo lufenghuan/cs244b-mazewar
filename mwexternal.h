@@ -27,6 +27,8 @@ int mws_cons(mw_state_t **s);
 /* Mazewar State Destructor */
 int mws_dest(mw_state_t *s);
 
+void mws_set_maze(mw_state_t *s, int **maze, int xmax, int ymax);
+
 /* Add a missile to the state
  * @id  : Unique ID number of the added missile
  * @x   : Starting x position of missile

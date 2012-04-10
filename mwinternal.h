@@ -29,8 +29,12 @@ extern BitCell missile[1];
 #define ASSERT(x) assert((x))
 
 typedef struct mw_state {
-	struct list_head mws_missiles;
-	struct list_head mws_rats;
+	struct list_head   mws_missiles;
+	struct list_head   mws_rats;
+
+	int              **mws_maze;
+	int                mws_xmax;
+	int                mws_ymax;
 } mw_state_t;
 
 typedef struct mw_missile {
@@ -59,6 +63,8 @@ int  mwm_dest(mw_missile_t *m);
 void mwm_render_wipe(const mw_missile_t *m);
 void mwm_render_draw(const mw_missile_t *m);
 void mwm_update(mw_missile_t *m);
+void  mwm_get_xpos(mw_missile_t *m, mw_pos_t *xpos);
+void  mwm_get_ypos(mw_missile_t *m, mw_pos_t *ypos);
 
 typedef struct mw_rat {
 	struct list_head  mwr_list;

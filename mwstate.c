@@ -16,6 +16,10 @@ mws_cons(mw_state_t **s)
 	INIT_LIST_HEAD(&tmp->mws_missiles);
 	INIT_LIST_HEAD(&tmp->mws_rats);
 
+	tmp->mws_maze = NULL;
+	tmp->mws_xmax = -1;
+	tmp->mws_ymax = -1;
+
 	*s = tmp;
 	return 0;
 }
@@ -23,10 +27,27 @@ mws_cons(mw_state_t **s)
 int
 mws_dest(mw_state_t *s)
 {
+	int i;
+
 	ASSERT(list_empty(&s->mws_missiles));
 	ASSERT(list_empty(&s->mws_rats));
+
+	if (s->mws_maze != NULL) {
+		for (i = 0; i < s->mws_xmax; i++)
+			free(s->mws_maze[i]);
+		free(s->mws_maze);
+	}
+
 	free(s);
 	return 0;
+}
+
+void
+mws_set_maze(mw_state_t *s, int **maze, int xmax, int ymax)
+{
+	s->mws_maze = maze;
+	s->mws_xmax = xmax;
+	s->mws_ymax = ymax;
 }
 
 int
@@ -61,7 +82,8 @@ mws_add_rat(mw_state_t *s, mw_rat_id_t *id,
 	return 0;
 }
 
-void mws_render_wipe(const mw_state_t *s)
+void
+mws_render_wipe(const mw_state_t *s)
 {
 	mw_missile_t *m;
 	list_for_each_entry(m, &s->mws_missiles, mwm_list) {
@@ -74,7 +96,8 @@ void mws_render_wipe(const mw_state_t *s)
 	}
 }
 
-void mws_render_draw(const mw_state_t *s)
+void
+mws_render_draw(const mw_state_t *s)
 {
 	mw_missile_t *m;
 	list_for_each_entry(m, &s->mws_missiles, mwm_list) {
@@ -88,20 +111,46 @@ void mws_render_draw(const mw_state_t *s)
 
 }
 
-static void __mws_update_missiles(mw_state_t *s)
+static void
+__mws_update_missiles(mw_state_t *s)
 {
-	mw_missile_t *m;
-	list_for_each_entry(m, &s->mws_missiles, mwm_list) {
-		mwm_update(m);
+	mw_missile_t *pos, *n;
+
+	/* Iteration using 'safe' is needed because the missile _may_ be
+	 * removed during iteration. The 'safe' version allows this.
+	 */
+	list_for_each_entry_safe(pos, n, &s->mws_missiles, mwm_list) {
+		mw_pos_t xpos, ypos;
+
+		mwm_update(pos);
+
+		mwm_get_xpos(pos, &xpos);
+		mwm_get_ypos(pos, &ypos);
+
+		/* 1 == wall at position x, y */
+		if (s->mws_maze[xpos][ypos] == 1) {
+			/* Missile hit a wall, time to destroy it */
+
+			/* XXX: This is a bit of a hack, but the
+			 *      missile's position needs to be wiped
+			 *      first.
+			 */
+			mwm_render_wipe(pos);
+
+			mwm_dest(pos);
+		}
 	}
 }
 
-void mws_update(mw_state_t *s)
+void
+mws_update(mw_state_t *s)
 {
+	ASSERT(s->mws_maze != NULL);
 	__mws_update_missiles(s);
 }
 
-static mw_rat_t *__mws_get_rat(mw_state_t *s, mw_rat_id_t id)
+static mw_rat_t *
+__mws_get_rat(mw_state_t *s, mw_rat_id_t id)
 {
 	/* XXX: Yes, this is bad, and slow, and ugly; but it's simple. */
 	mw_rat_t *r;
@@ -113,7 +162,8 @@ static mw_rat_t *__mws_get_rat(mw_state_t *s, mw_rat_id_t id)
 	return NULL;
 }
 
-int mws_set_rat_xpos(mw_state_t *s, mw_rat_id_t id, mw_pos_t x)
+int
+mws_set_rat_xpos(mw_state_t *s, mw_rat_id_t id, mw_pos_t x)
 {
 	mw_rat_t *r = __mws_get_rat(s, id);
 
@@ -123,7 +173,8 @@ int mws_set_rat_xpos(mw_state_t *s, mw_rat_id_t id, mw_pos_t x)
 	return mwr_set_xpos(r, x);
 }
 
-int mws_set_rat_ypos(mw_state_t *s, mw_rat_id_t id, mw_pos_t y)
+int
+mws_set_rat_ypos(mw_state_t *s, mw_rat_id_t id, mw_pos_t y)
 {
 	mw_rat_t *r = __mws_get_rat(s, id);
 
@@ -133,7 +184,8 @@ int mws_set_rat_ypos(mw_state_t *s, mw_rat_id_t id, mw_pos_t y)
 	return mwr_set_ypos(r, y);
 }
 
-int mws_set_rat_dir(mw_state_t *s, mw_rat_id_t id, mw_dir_t dir)
+int
+mws_set_rat_dir(mw_state_t *s, mw_rat_id_t id, mw_dir_t dir)
 {
 	mw_rat_t *r = __mws_get_rat(s, id);
 

@@ -83,8 +83,7 @@ mwm_cons(mw_missile_t **m, mw_missile_id_t *id,
 int
 mwm_dest(mw_missile_t *m)
 {
-	ASSERT(list_empty(&m->mwm_list));
-
+	list_del(&m->mwm_list);
 	free(m);
 	return 0;
 }
@@ -142,6 +141,18 @@ mwm_update(mw_missile_t *m)
 {
 	if (__mwm_timeout_triggered(m))
 		__mwm_update_position(m);
+}
+
+void
+mwm_get_xpos(mw_missile_t *m, mw_pos_t *xpos)
+{
+	*xpos = m->mwm_x_pos;
+}
+
+void
+mwm_get_ypos(mw_missile_t *m, mw_pos_t *ypos)
+{
+	*ypos = m->mwm_y_pos;
 }
 
 /* vim: set tabstop=8 shiftwidth=8 noexpandtab: */
