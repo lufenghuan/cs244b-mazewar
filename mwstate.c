@@ -4,6 +4,15 @@
 
 #include "mwinternal.h"
 
+#define SECS_IN_PHASE_DISCOVERY 5
+
+static void
+__mws_init_elapsedtime(struct timeval *elapsedtime)
+{
+	elapsedtime->tv_sec  = 0;
+	elapsedtime->tv_usec = 0;
+}
+
 int
 mws_cons(mw_state_t **s)
 {
@@ -15,6 +24,11 @@ mws_cons(mw_state_t **s)
 
 	INIT_LIST_HEAD(&tmp->mws_missiles);
 	INIT_LIST_HEAD(&tmp->mws_rats);
+
+	tmp->mws_phase = MWS_PHASE_DISCOVERY;
+	__mws_init_elapsedtime(&tmp->mws_elapsedtime);
+
+	gettimeofday(&tmp->mws_lasttime, NULL);
 
 	tmp->mws_maze = NULL;
 	tmp->mws_xmax = -1;
@@ -188,11 +202,34 @@ __mws_update_missiles(mw_state_t *s)
 	}
 }
 
+static void
+__mws_update_elapsedtime(mw_state_t *s)
+{
+	struct timeval curtime, diff;
+
+	gettimeofday(&curtime, NULL);
+
+	mw_timeval_difference(&diff, &curtime, &s->mws_lasttime);
+	mw_timeval_sum(&s->mws_elapsedtime, &s->mws_elapsedtime, &diff);
+
+	gettimeofday(&s->mws_lasttime, NULL);
+}
+
 void
 mws_update(mw_state_t *s)
 {
 	ASSERT(s->mws_maze != NULL);
-	__mws_update_missiles(s);
+
+	__mws_update_elapsedtime(s);
+
+	if (s->mws_phase == MWS_PHASE_DISCOVERY) {
+		if (s->mws_elapsedtime.tv_sec >= SECS_IN_PHASE_DISCOVERY) {
+			s->mws_phase = MWS_PHASE_ACTIVE;
+			__mws_init_elapsedtime(&s->mws_elapsedtime);
+		}
+	} else {
+		__mws_update_missiles(s);
+	}
 }
 
 static mw_rat_t *

@@ -33,3 +33,23 @@ mw_timeval_difference(struct timeval *diff,
 	diff->tv_sec  = x.tv_sec  - y.tv_sec;
 	diff->tv_usec = x.tv_usec - y.tv_usec;
 }
+
+void
+mw_timeval_sum(struct timeval *sum,
+               const struct timeval *__x,
+               const struct timeval *__y)
+{
+	struct timeval x;
+	struct timeval y;
+
+	memcpy(&x, __x, sizeof(struct timeval));
+	memcpy(&y, __y, sizeof(struct timeval));
+
+	sum->tv_sec  = x.tv_sec  + y.tv_sec;
+	sum->tv_usec = x.tv_usec + y.tv_usec;
+
+	if (sum->tv_usec >= 1000000) {
+		sum->tv_sec++;
+		sum->tv_usec -= 1000000;
+	}
+}

@@ -28,9 +28,18 @@ extern BitCell missile[1];
 
 #define ASSERT(x) assert((x))
 
+typedef enum {
+	MWS_PHASE_DISCOVERY,
+	MWS_PHASE_ACTIVE
+} mws_phase_t;
+
 typedef struct mw_state {
 	struct list_head   mws_missiles;
 	struct list_head   mws_rats;
+
+	mws_phase_t        mws_phase;
+	struct timeval     mws_elapsedtime;
+	struct timeval     mws_lasttime;
 
 	int              **mws_maze;
 	int                mws_xmax;
@@ -97,9 +106,11 @@ int  mwr_set_xpos(mw_rat_t *r, mw_pos_t x);
 int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
 
-void mw_timeval_difference(struct timeval *diff,
-                           const struct timeval *x,
+void mw_timeval_difference(struct timeval *diff, const struct timeval *x,
                            const struct timeval *y);
+
+void mw_timeval_sum(struct timeval *diff, const struct timeval *x,
+                    const struct timeval *y);
 
 #endif /* _MW_INTERNAL_H */
 
