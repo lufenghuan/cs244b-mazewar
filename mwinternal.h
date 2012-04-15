@@ -106,6 +106,54 @@ int  mwr_set_xpos(mw_rat_t *r, mw_pos_t x);
 int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
 
+typedef struct mw_pkt_header {
+	uint8_t    mwph_descriptor;
+	uint8_t    mwph_mbz[3];
+	uint64_t   mwph_guid;
+	uint64_t   mwph_seqnum;
+} mw_pkt_header_t;
+
+typedef struct mw_pkt_state {
+	mw_pkt_header_t mwps_header;
+
+	/* Bits:  0 - 14 are for the rat's x position
+	 * Bits: 15 - 29 are for the rat's y position
+	 * Bits: 30 & 31 are for the rat's direction
+	 */
+	uint32_t        mwps_rat_posdir;
+
+	/* Bits:  0 - 14 are for the missile's x position
+	 * Bits: 15 - 29 are for the missile's y position
+	 * Bits: 30 & 31 are for the missile's direction
+	 */
+	uint32_t        mwps_missile_posdir;
+
+	uint32_t        mwps_score;
+	uint64_t        mwps_timestamp;
+	uint64_t        mwps_crt;
+} mw_pkt_state_t;
+
+typedef struct mw_pkt_nickname {
+	mw_pkt_header_t mwpn_header;
+	uint8_t         mwpn_nickname[32];
+} mw_pkt_nickname_t;
+
+typedef struct mw_pkt_tagged {
+	mw_pkt_header_t mwpt_header;
+	uint64_t        mwpt_shooter_guid;
+} mw_pkt_tagged_t;
+
+typedef struct mw_pkt_ack {
+	mw_pkt_header_t mwpa_header;
+	uint64_t        mwpa_guid;
+	uint64_t        mwpa_seqnum;
+} mw_pkt_ack_t;
+
+typedef struct mw_pkt_leaving {
+	mw_pkt_header_t mwpl_header;
+	uint64_t        mwpl_leaving_guid;
+} mw_pkt_leaving_t;
+
 void mw_timeval_difference(struct timeval *diff, const struct timeval *x,
                            const struct timeval *y);
 
