@@ -97,6 +97,10 @@ int  mwr_set_xpos(mw_rat_t *r, mw_pos_t x);
 int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
 
+void mw_timeval_difference(struct timeval *diff,
+                           const struct timeval *x,
+                           const struct timeval *y);
+
 #endif /* _MW_INTERNAL_H */
 
 /* vim: set tabstop=8 shiftwidth=8 noexpandtab: */

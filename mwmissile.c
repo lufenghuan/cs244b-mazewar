@@ -99,30 +99,21 @@ mwm_render_draw(const mw_missile_t *m)
 static int
 __mwm_timeout_triggered(mw_missile_t *m)
 {
-	struct timeval curtime, *lasttime, *timeout;
+	struct timeval curtime, diff;
 	int triggered = 0;
 
 	gettimeofday(&curtime, NULL);
 
-	lasttime = &m->mwm_lasttime;
-	timeout  = &m->mwm_timeout;
+	mw_timeval_difference(&diff, &curtime, &m->mwm_lasttime);
+	mw_timeval_difference(&m->mwm_timeout, &m->mwm_timeout, &diff);
 
-	timeout->tv_sec  -= curtime.tv_sec  - lasttime->tv_sec;
-	timeout->tv_usec -= curtime.tv_usec - lasttime->tv_usec;
-
-	if (timeout->tv_usec < 0) {
-		timeout->tv_sec--;
-		timeout->tv_usec += 1000000; /* 1 sec = 1,000,000 usec */
-	}
-
-	if ((timeout->tv_sec < 0) || (timeout->tv_sec == 0 &&
-	                              timeout->tv_usec <= 0))
-	{
+	if ((m->mwm_timeout.tv_sec < 0) || (m->mwm_timeout.tv_sec == 0 &&
+	                                    m->mwm_timeout.tv_usec <= 0)) {
 		triggered = 1;
-		__mwm_init_timeout(timeout);
+		__mwm_init_timeout(&m->mwm_timeout);
 	}
 
-	gettimeofday(lasttime, NULL);
+	gettimeofday(&m->mwm_lasttime, NULL);
 	return triggered;
 }
 
