@@ -235,9 +235,46 @@ __mwr_update_timeouts(mw_rat_t *r)
 	gettimeofday(&r->mwr_lasttime, NULL);
 }
 
+static int
+__mwr_state_pkt_timeout_triggered(mw_rat_t *r)
+{
+	if (mw_timeval_timeout_triggered(&r->mwr_state_pkt_timeout)) {
+		__mwr_init_state_pkt_timeout(&r->mwr_state_pkt_timeout);
+		return 1;
+	}
+
+	return 0;
+}
+
 void
-mwr_update(mw_rat_t *r, int **maze)
+mwr_update(mw_rat_t *r, int **maze, struct sockaddr *addr, int socket)
 {
 	__mwr_update_missile(r, maze);
 	__mwr_update_timeouts(r);
+
+	if (__mwr_state_pkt_timeout_triggered(r))
+		mwr_send_state_pkt(r, addr, socket);
+}
+
+int
+mwr_send_state_pkt(mw_rat_t *r, struct sockaddr *addr, int socket)
+{
+	mw_pkt_state pkt;
+
+	/* TODO: Fill in pkt with actual state information */
+	pkt.mwps_header.mwph_descriptor = MW_PKT_HDR_DESCRIPTOR_STATE;
+	pkt.mwps_header.mwph_mbz[0]     = 0;
+	pkt.mwps_header.mwph_mbz[1]     = 0;
+	pkt.mwps_header.mwph_mbz[2]     = 0;
+	pkt.mwps_header.mwph_guid       = 0xABAD1DEA;
+	pkt.mwps_header.mwph_seqnum     = 0xABAD1DEA;
+	pkt.mwps_rat_posdir             = 0xABAD1DEA;
+	pkt.mwps_missile_posdir         = 0xABAD1DEA;
+	pkt.mwps_score                  = 0xABAD1DEA;
+	pkt.mwps_timestamp              = 0xABAD1DEA;
+	pkt.mwps_crt                    = 0xABAD1DEA;
+
+	/* XXX: Must swap pkt before sending it on the wire */
+	return sendto(socket, &pkt, sizeof(mw_pkt_state), 0, addr,
+	              sizeof(struct sockaddr));
 }

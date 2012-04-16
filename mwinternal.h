@@ -113,7 +113,14 @@ int  mwr_set_xpos(mw_rat_t *r, mw_pos_t x);
 int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
 int  mwr_fire_missile(mw_rat_t *r, int **maze);
-void mwr_update(mw_rat_t *r, int **maze);
+void mwr_update(mw_rat_t *r, int **maze, struct sockaddr *addr, int socket);
+int  mwr_send_state_pkt(mw_rat_t *r, struct sockaddr *addr, int socket);
+
+#define MW_PKT_HDR_DESCRIPTOR_STATE    0
+#define MW_PKT_HDR_DESCRIPTOR_NICKNAME 1
+#define MW_PKT_HDR_DESCRIPTOR_TAGGED   2
+#define MW_PKT_HDR_DESCRIPTOR_ACK      3
+#define MW_PKT_HDR_DESCRIPTOR_LEAVING  4
 
 typedef struct mw_pkt_header {
 	uint8_t    mwph_descriptor;
@@ -168,6 +175,8 @@ void mw_timeval_difference(struct timeval *diff, const struct timeval *x,
 
 void mw_timeval_sum(struct timeval *diff, const struct timeval *x,
                     const struct timeval *y);
+
+int  mw_timeval_timeout_triggered(const struct timeval *timeout);
 
 #endif /* _MW_INTERNAL_H */
 

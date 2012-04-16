@@ -53,3 +53,10 @@ mw_timeval_sum(struct timeval *sum,
 		sum->tv_usec -= 1000000;
 	}
 }
+
+int
+mw_timeval_timeout_triggered(const struct timeval *timeout)
+{
+	return ((timeout->tv_sec < 0) || (timeout->tv_sec  == 0 &&
+	                                  timeout->tv_usec <= 0));
+}

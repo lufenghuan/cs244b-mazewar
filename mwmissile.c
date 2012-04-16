@@ -110,8 +110,7 @@ __mwm_timeout_triggered(mw_missile_t *m)
 	mw_timeval_difference(&diff, &curtime, &m->mwm_lasttime);
 	mw_timeval_difference(&m->mwm_timeout, &m->mwm_timeout, &diff);
 
-	if ((m->mwm_timeout.tv_sec < 0) || (m->mwm_timeout.tv_sec == 0 &&
-	                                    m->mwm_timeout.tv_usec <= 0)) {
+	if (mw_timeval_timeout_triggered(&m->mwm_timeout)) {
 		triggered = 1;
 		__mwm_init_timeout(&m->mwm_timeout);
 	}
