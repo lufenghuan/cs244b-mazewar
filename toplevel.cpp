@@ -338,8 +338,7 @@ void shoot()
 	M->scoreIs( M->score().value()-1 );
 	UpdateScoreCard(M->myRatId().value());
 
-	/* TODO: Keep track of missile ID number */
-	mws_add_missile(M->state, NULL, MY_X_LOC, MY_Y_LOC, MY_MW_DIR_T);
+	mws_fire_missile(M->state, M->local_id);
 }
 
 /* ----------------------------------------------------------------------- */

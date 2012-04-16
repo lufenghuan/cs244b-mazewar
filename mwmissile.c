@@ -73,7 +73,10 @@ mwm_cons(mw_missile_t **m, mw_missile_id_t *id,
 int
 mwm_dest(mw_missile_t *m)
 {
-	list_del(&m->mwm_list);
+	/* If it is on a list, remove it from the list */
+	if (!list_empty(&m->mwm_list))
+		list_del(&m->mwm_list);
+
 	free(m);
 	return 0;
 }

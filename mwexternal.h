@@ -31,15 +31,6 @@ void mws_set_maze(mw_state_t *s, int **maze, int xmax, int ymax);
 void mws_set_addr(mw_state_t *s, struct sockaddr *mcast, int socket);
 
 /* Add a missile to the state
- * @id  : Unique ID number of the added missile
- * @x   : Starting x position of missile
- * @y   : Starting y position of missile
- * @dir : Starting direction of missile
- */
-int mws_add_missile(mw_state_t *s, mw_missile_id_t *id,
-                    mw_pos_t x, mw_pos_t y, mw_dir_t dir);
-
-/* Add a missile to the state
  * @id   : Unique ID number of the added rat
  * @x    : Starting x position of rat
  * @y    : Starting y position of rat
@@ -58,6 +49,7 @@ void mws_update(mw_state_t *s);
 int mws_set_rat_xpos(mw_state_t *s, mw_rat_id_t id, mw_pos_t x);
 int mws_set_rat_ypos(mw_state_t *s, mw_rat_id_t id, mw_pos_t y);
 int mws_set_rat_dir(mw_state_t *s, mw_rat_id_t id, mw_dir_t dir);
+int mws_fire_missile(mw_state_t *s, mw_rat_id_t id);
 
 #endif /* _MW_EXTERNAL_H */
 

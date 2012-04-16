@@ -37,7 +37,6 @@ typedef struct mw_state {
 	struct sockaddr   *mws_mcast_addr;
 	int                mws_mcast_socket;
 
-	struct list_head   mws_missiles;
 	struct list_head   mws_rats;
 
 	mws_phase_t        mws_phase;
@@ -80,14 +79,16 @@ void  mwm_get_ypos(mw_missile_t *m, mw_pos_t *ypos);
 
 typedef struct mw_rat {
 	struct list_head  mwr_list;
+
 	mw_rat_id_t       mwr_id;
 	mw_pos_t          mwr_x_pos;
 	mw_pos_t          mwr_y_pos;
 	mw_dir_t          mwr_dir;
 	char             *mwr_name;
+	mw_missile_t     *mwr_missile;
 
-	mw_pos_t         mwr_x_wipe;
-	mw_pos_t         mwr_y_wipe;
+	mw_pos_t          mwr_x_wipe;
+	mw_pos_t          mwr_y_wipe;
 } mw_rat_t;
 
 /* Mazewar Rat Constructor
@@ -108,6 +109,8 @@ int  mwr_cmp_id(mw_rat_t *r, mw_rat_id_t id);
 int  mwr_set_xpos(mw_rat_t *r, mw_pos_t x);
 int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
+int  mwr_fire_missile(mw_rat_t *r, int **maze);
+void mwr_update(mw_rat_t *r, int **maze);
 
 typedef struct mw_pkt_header {
 	uint8_t    mwph_descriptor;

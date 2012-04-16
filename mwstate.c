@@ -6,6 +6,19 @@
 
 #define SECS_IN_PHASE_DISCOVERY 5
 
+static mw_rat_t *
+__mws_get_rat(mw_state_t *s, mw_rat_id_t id)
+{
+	/* XXX: Yes, this is bad, and slow, and ugly; but it's simple. */
+	mw_rat_t *r;
+	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+		if (mwr_cmp_id(r, id) == 0)
+			return r;
+	}
+
+	return NULL;
+}
+
 static void
 __mws_init_elapsedtime(struct timeval *elapsedtime)
 {
@@ -22,7 +35,6 @@ mws_cons(mw_state_t **s)
 	if (tmp == NULL)
 		return -ENOMEM;
 
-	INIT_LIST_HEAD(&tmp->mws_missiles);
 	INIT_LIST_HEAD(&tmp->mws_rats);
 
 	tmp->mws_phase = MWS_PHASE_DISCOVERY;
@@ -46,7 +58,6 @@ mws_dest(mw_state_t *s)
 {
 	int i;
 
-	ASSERT(list_empty(&s->mws_missiles));
 	ASSERT(list_empty(&s->mws_rats));
 
 	if (s->mws_maze != NULL) {
@@ -74,65 +85,15 @@ mws_set_addr(mw_state_t *s, struct sockaddr *mcast, int socket)
 	s->mws_mcast_socket = socket;
 }
 
-void
-__mws_xpos_plus_dir(mw_pos_t *xnew, mw_pos_t xold, mw_dir_t dir)
-{
-	/* "North" is defined to be to the right, positive X direction */
-	switch(dir) {
-	case MW_DIR_NORTH:
-		*xnew = xold + 1;
-		break;
-	case MW_DIR_SOUTH:
-		*xnew = xold - 1;
-		break;
-	default:
-		*xnew = xold;
-		break;
-	}
-}
-
-void
-__mws_ypos_plus_dir(mw_pos_t *ynew, mw_pos_t yold, mw_dir_t dir)
-{
-	/* "North" is defined to be to the right, positive X direction */
-	switch(dir) {
-	case MW_DIR_EAST:
-		*ynew = yold + 1;
-		break;
-	case MW_DIR_WEST:
-		*ynew = yold - 1;
-		break;
-	default:
-		*ynew = yold;
-		break;
-	}
-}
-
 int
-mws_add_missile(mw_state_t *s, mw_missile_id_t *id,
-                mw_pos_t x, mw_pos_t y, mw_dir_t dir)
+mws_fire_missile(mw_state_t *s, mw_rat_id_t id)
 {
-	mw_missile_t *m;
-	mw_pos_t xnew, ynew;
-	int rc;
+	mw_rat_t *r = __mws_get_rat(s, id);
 
-	/* The position passed in here is the position of the rat when
-	 * the shot was fired. The missile needs to be constructed in
-	 * front of the rat, thus we need to calculate it's new position
-	 */
-	__mws_xpos_plus_dir(&xnew, x, dir);
-	__mws_ypos_plus_dir(&ynew, y, dir);
+	if (r == NULL)
+		return -1;
 
-	/* 1 == wall at position, missile shot directly into wall. */
-	if (s->mws_maze[xnew][ynew] == 1)
-		return 0;
-
-	rc = mwm_cons(&m, id, xnew, ynew, dir);
-	if (rc)
-		return rc;
-
-	list_add_tail(&m->mwm_list, &s->mws_missiles);
-	return 0;
+	return mwr_fire_missile(r, s->mws_maze);
 }
 
 int
@@ -155,11 +116,6 @@ mws_add_rat(mw_state_t *s, mw_rat_id_t *id,
 void
 mws_render_wipe(const mw_state_t *s)
 {
-	mw_missile_t *m;
-	list_for_each_entry(m, &s->mws_missiles, mwm_list) {
-		mwm_render_wipe(m);
-	}
-
 	mw_rat_t *r;
 	list_for_each_entry(r, &s->mws_rats, mwr_list) {
 		mwr_render_wipe(r);
@@ -169,46 +125,18 @@ mws_render_wipe(const mw_state_t *s)
 void
 mws_render_draw(const mw_state_t *s)
 {
-	mw_missile_t *m;
-	list_for_each_entry(m, &s->mws_missiles, mwm_list) {
-		mwm_render_draw(m);
-	}
-
 	mw_rat_t *r;
 	list_for_each_entry(r, &s->mws_rats, mwr_list) {
 		mwr_render_draw(r);
 	}
-
 }
 
 static void
-__mws_update_missiles(mw_state_t *s)
+__mws_update_rats(mw_state_t *s)
 {
-	mw_missile_t *pos, *n;
-
-	/* Iteration using 'safe' is needed because the missile _may_ be
-	 * removed during iteration. The 'safe' version allows this.
-	 */
-	list_for_each_entry_safe(pos, n, &s->mws_missiles, mwm_list) {
-		mw_pos_t xpos, ypos;
-
-		mwm_update(pos);
-
-		mwm_get_xpos(pos, &xpos);
-		mwm_get_ypos(pos, &ypos);
-
-		/* 1 == wall at position x, y */
-		if (s->mws_maze[xpos][ypos] == 1) {
-			/* Missile hit a wall, time to destroy it */
-
-			/* XXX: This is a bit of a hack, but the
-			 *      missile's position needs to be wiped
-			 *      first.
-			 */
-			mwm_render_wipe(pos);
-
-			mwm_dest(pos);
-		}
+	mw_rat_t *r;
+	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+		mwr_update(r, s->mws_maze);
 	}
 }
 
@@ -238,21 +166,8 @@ mws_update(mw_state_t *s)
 			__mws_init_elapsedtime(&s->mws_elapsedtime);
 		}
 	} else {
-		__mws_update_missiles(s);
+		__mws_update_rats(s);
 	}
-}
-
-static mw_rat_t *
-__mws_get_rat(mw_state_t *s, mw_rat_id_t id)
-{
-	/* XXX: Yes, this is bad, and slow, and ugly; but it's simple. */
-	mw_rat_t *r;
-	list_for_each_entry(r, &s->mws_rats, mwr_list) {
-		if (mwr_cmp_id(r, id) == 0)
-			return r;
-	}
-
-	return NULL;
 }
 
 int
