@@ -34,6 +34,9 @@ typedef enum {
 } mws_phase_t;
 
 typedef struct mw_state {
+	struct sockaddr   *mws_mcast_addr;
+	int                mws_mcast_socket;
+
 	struct list_head   mws_missiles;
 	struct list_head   mws_rats;
 

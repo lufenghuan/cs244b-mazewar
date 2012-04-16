@@ -30,6 +30,9 @@ mws_cons(mw_state_t **s)
 
 	gettimeofday(&tmp->mws_lasttime, NULL);
 
+	tmp->mws_mcast_addr   = NULL;
+	tmp->mws_mcast_socket = -1;
+
 	tmp->mws_maze = NULL;
 	tmp->mws_xmax = -1;
 	tmp->mws_ymax = -1;
@@ -62,6 +65,13 @@ mws_set_maze(mw_state_t *s, int **maze, int xmax, int ymax)
 	s->mws_maze = maze;
 	s->mws_xmax = xmax;
 	s->mws_ymax = ymax;
+}
+
+void
+mws_set_addr(mw_state_t *s, struct sockaddr *mcast, int socket)
+{
+	s->mws_mcast_addr   = mcast;
+	s->mws_mcast_socket = socket;
 }
 
 void

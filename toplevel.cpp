@@ -635,6 +635,7 @@ netInit()
 	memcpy(&groupAddr, &nullAddr, sizeof(Sockaddr));
 	groupAddr.sin_addr.s_addr = htonl(MAZEGROUP);
 
+	mws_set_addr(M->state, (struct sockaddr *)&groupAddr, M->theSocket());
 }
 
 

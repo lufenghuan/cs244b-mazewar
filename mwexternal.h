@@ -28,6 +28,7 @@ int mws_cons(mw_state_t **s);
 int mws_dest(mw_state_t *s);
 
 void mws_set_maze(mw_state_t *s, int **maze, int xmax, int ymax);
+void mws_set_addr(mw_state_t *s, struct sockaddr *mcast, int socket);
 
 /* Add a missile to the state
  * @id  : Unique ID number of the added missile
