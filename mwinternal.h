@@ -87,6 +87,9 @@ typedef struct mw_rat {
 	char             *mwr_name;
 	mw_missile_t     *mwr_missile;
 
+	struct timeval    mwr_state_pkt_timeout;
+	struct timeval    mwr_lasttime;
+
 	mw_pos_t          mwr_x_wipe;
 	mw_pos_t          mwr_y_wipe;
 } mw_rat_t;

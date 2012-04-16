@@ -12,6 +12,13 @@
 /* Global counter used to uniquely assign ID numbers to rats */
 static mw_rat_id_t mw_rat_count = 0;
 
+static void
+__mwr_init_state_pkt_timeout(struct timeval *timeout)
+{
+	timeout->tv_sec  = 0;
+	timeout->tv_usec = 500000;
+}
+
 int
 mwr_cons(mw_rat_t **r, mw_rat_id_t *id,
          mw_pos_t x, mw_pos_t y, mw_dir_t dir,
@@ -37,6 +44,9 @@ mwr_cons(mw_rat_t **r, mw_rat_id_t *id,
 	}
 
 	tmp->mwr_missile = NULL;
+
+	__mwr_init_state_pkt_timeout(&tmp->mwr_state_pkt_timeout);
+	gettimeofday(&tmp->mwr_lasttime, NULL);
 
 	if (id != NULL)
 		*id = tmp->mwr_id;
@@ -210,8 +220,24 @@ __mwr_update_missile(mw_rat_t *r, int **maze)
 	}
 }
 
+static void
+__mwr_update_timeouts(mw_rat_t *r)
+{
+	struct timeval curtime, diff;
+
+	gettimeofday(&curtime, NULL);
+
+	mw_timeval_difference(&diff, &curtime, &r->mwr_lasttime);
+
+	mw_timeval_difference(&r->mwr_state_pkt_timeout,
+	                      &r->mwr_state_pkt_timeout, &diff);
+
+	gettimeofday(&r->mwr_lasttime, NULL);
+}
+
 void
 mwr_update(mw_rat_t *r, int **maze)
 {
 	__mwr_update_missile(r, maze);
+	__mwr_update_timeouts(r);
 }
