@@ -176,6 +176,8 @@ typedef struct mw_pkt_leaving {
 
 int      mw_timeval_timeout_triggered(const struct timeval *timeout);
 uint64_t mw_rand(void);
+void     mw_print_pkt_header(const mw_pkt_header_t *pkt);
+void     mw_print_pkt_state(const mw_pkt_state_t *pkt);
 void     mw_timeval_sum(struct timeval *diff,
                         const struct timeval *x,
                         const struct timeval *y);

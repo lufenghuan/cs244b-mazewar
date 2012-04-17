@@ -4,6 +4,8 @@
 
 #include "mwinternal.h"
 
+#include <stdio.h>
+
 /* Source: www.gnu.org/softwar/libc/manual/html_node/Elapsed-Time.html */
 void
 mw_timeval_difference(struct timeval *diff,
@@ -75,4 +77,30 @@ mw_rand(void)
 		rc = (rc << (32 * i)) | (uint32_t) rand();
 
 	return rc;
+}
+
+#define __PRINT(data, format, descriptor) \
+	printf("%15s : " format "\n", descriptor, data);
+
+void
+mw_print_pkt_header(const mw_pkt_header_t *pkt)
+{
+	__PRINT(pkt->mwph_descriptor, "%x",  "descriptor");
+	__PRINT(pkt->mwph_mbz[0],     "%x",  "mbz[0]");
+	__PRINT(pkt->mwph_mbz[1],     "%x",  "mbz[1]");
+	__PRINT(pkt->mwph_mbz[2],     "%x",  "mbz[2]");
+	__PRINT(pkt->mwph_guid,       "%lx", "guid");
+	__PRINT(pkt->mwph_seqno,      "%lx", "seqno");
+}
+
+void
+mw_print_pkt_state(const mw_pkt_state_t *pkt)
+{
+	mw_print_pkt_header(&pkt->mwps_header);
+
+	__PRINT(pkt->mwps_rat_posdir,     "%x",  "rat_posdir");
+	__PRINT(pkt->mwps_missile_posdir, "%x",  "missile_posdir");
+	__PRINT(pkt->mwps_score,          "%x",  "score");
+	__PRINT(pkt->mwps_timestamp,      "%lx", "timestamp");
+	__PRINT(pkt->mwps_crt,            "%lx", "crt");
 }
