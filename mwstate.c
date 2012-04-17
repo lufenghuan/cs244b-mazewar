@@ -7,7 +7,7 @@
 #define SECS_IN_PHASE_DISCOVERY 5
 
 static mw_rat_t *
-__mws_get_rat(mw_state_t *s, mw_rat_id_t id)
+__mws_get_rat(mw_state_t *s, mw_guid_t id)
 {
 	/* XXX: Yes, this is bad, and slow, and ugly; but it's simple. */
 	mw_rat_t *r;
@@ -86,7 +86,7 @@ mws_set_addr(mw_state_t *s, struct sockaddr *mcast, int socket)
 }
 
 int
-mws_fire_missile(mw_state_t *s, mw_rat_id_t id)
+mws_fire_missile(mw_state_t *s, mw_guid_t id)
 {
 	mw_rat_t *r = __mws_get_rat(s, id);
 
@@ -97,7 +97,7 @@ mws_fire_missile(mw_state_t *s, mw_rat_id_t id)
 }
 
 int
-mws_add_rat(mw_state_t *s, mw_rat_id_t *id,
+mws_add_rat(mw_state_t *s, mw_guid_t *id,
             mw_pos_t x, mw_pos_t y, mw_dir_t dir,
             const char *name)
 {
@@ -174,7 +174,7 @@ mws_update(mw_state_t *s)
 }
 
 int
-mws_set_rat_xpos(mw_state_t *s, mw_rat_id_t id, mw_pos_t x)
+mws_set_rat_xpos(mw_state_t *s, mw_guid_t id, mw_pos_t x)
 {
 	mw_rat_t *r = __mws_get_rat(s, id);
 
@@ -185,7 +185,7 @@ mws_set_rat_xpos(mw_state_t *s, mw_rat_id_t id, mw_pos_t x)
 }
 
 int
-mws_set_rat_ypos(mw_state_t *s, mw_rat_id_t id, mw_pos_t y)
+mws_set_rat_ypos(mw_state_t *s, mw_guid_t id, mw_pos_t y)
 {
 	mw_rat_t *r = __mws_get_rat(s, id);
 
@@ -196,7 +196,7 @@ mws_set_rat_ypos(mw_state_t *s, mw_rat_id_t id, mw_pos_t y)
 }
 
 int
-mws_set_rat_dir(mw_state_t *s, mw_rat_id_t id, mw_dir_t dir)
+mws_set_rat_dir(mw_state_t *s, mw_guid_t id, mw_dir_t dir)
 {
 	mw_rat_t *r = __mws_get_rat(s, id);
 

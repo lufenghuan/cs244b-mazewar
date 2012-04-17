@@ -80,7 +80,7 @@ void  mwm_get_ypos(mw_missile_t *m, mw_pos_t *ypos);
 typedef struct mw_rat {
 	struct list_head  mwr_list;
 
-	mw_rat_id_t       mwr_id;
+	mw_guid_t         mwr_id;
 	mw_pos_t          mwr_x_pos;
 	mw_pos_t          mwr_y_pos;
 	mw_dir_t          mwr_dir;
@@ -102,13 +102,13 @@ typedef struct mw_rat {
  * @dir  : Starting direction of rat
  * @name : Starting name of the rat
  */
-int  mwr_cons(mw_rat_t **r, mw_rat_id_t *id,
+int  mwr_cons(mw_rat_t **r, mw_guid_t *id,
               mw_pos_t x, mw_pos_t y, mw_dir_t dir,
               const char *name);
 int  mwr_dest(mw_rat_t *r);
 void mwr_render_wipe(const mw_rat_t *r);
 void mwr_render_draw(const mw_rat_t *r);
-int  mwr_cmp_id(mw_rat_t *r, mw_rat_id_t id);
+int  mwr_cmp_id(mw_rat_t *r, mw_guid_t id);
 int  mwr_set_xpos(mw_rat_t *r, mw_pos_t x);
 int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);

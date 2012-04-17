@@ -9,7 +9,7 @@
 
 typedef uint8_t  mw_pos_t;
 typedef uint32_t mw_missile_id_t;
-typedef uint32_t mw_rat_id_t;
+typedef uint64_t mw_guid_t;
 
 typedef enum {
 	MW_DIR_NORTH,
@@ -37,7 +37,7 @@ void mws_set_addr(mw_state_t *s, struct sockaddr *mcast, int socket);
  * @dir  : Starting direction of rat
  * @name : Starting name of the rat
  */
-int mws_add_rat(mw_state_t *s, mw_rat_id_t *id,
+int mws_add_rat(mw_state_t *s, mw_guid_t *id,
                 mw_pos_t x, mw_pos_t y, mw_dir_t dir,
                 const char *name);
 
@@ -46,10 +46,10 @@ void mws_render_draw(const mw_state_t *s);
 
 void mws_update(mw_state_t *s);
 
-int mws_set_rat_xpos(mw_state_t *s, mw_rat_id_t id, mw_pos_t x);
-int mws_set_rat_ypos(mw_state_t *s, mw_rat_id_t id, mw_pos_t y);
-int mws_set_rat_dir(mw_state_t *s, mw_rat_id_t id, mw_dir_t dir);
-int mws_fire_missile(mw_state_t *s, mw_rat_id_t id);
+int mws_set_rat_xpos(mw_state_t *s, mw_guid_t id, mw_pos_t x);
+int mws_set_rat_ypos(mw_state_t *s, mw_guid_t id, mw_pos_t y);
+int mws_set_rat_dir(mw_state_t *s, mw_guid_t id, mw_dir_t dir);
+int mws_fire_missile(mw_state_t *s, mw_guid_t id);
 
 #endif /* _MW_EXTERNAL_H */
 

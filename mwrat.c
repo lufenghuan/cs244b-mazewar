@@ -9,9 +9,6 @@
 
 #include <string.h>
 
-/* Global counter used to uniquely assign ID numbers to rats */
-static mw_rat_id_t mw_rat_count = 0;
-
 static void
 __mwr_init_state_pkt_timeout(struct timeval *timeout)
 {
@@ -20,7 +17,7 @@ __mwr_init_state_pkt_timeout(struct timeval *timeout)
 }
 
 int
-mwr_cons(mw_rat_t **r, mw_rat_id_t *id,
+mwr_cons(mw_rat_t **r, mw_guid_t *id,
          mw_pos_t x, mw_pos_t y, mw_dir_t dir,
          const char *name)
 {
@@ -32,7 +29,7 @@ mwr_cons(mw_rat_t **r, mw_rat_id_t *id,
 
 	INIT_LIST_HEAD(&tmp->mwr_list);
 	/* XXX: Not thread safe. Accessing Global */
-	tmp->mwr_id    = mw_rat_count++;
+	tmp->mwr_id    = 0xABAD1DEA; /* TODO: Implement real ID */
 	tmp->mwr_x_pos = tmp->mwr_x_wipe = x;
 	tmp->mwr_y_pos = tmp->mwr_y_wipe = y;
 	tmp->mwr_dir   = dir;
@@ -93,7 +90,7 @@ mwr_render_draw(const mw_rat_t *r)
 }
 
 int
-mwr_cmp_id(mw_rat_t *r, mw_rat_id_t id)
+mwr_cmp_id(mw_rat_t *r, mw_guid_t id)
 {
 	if (r->mwr_id > id)
 		return 1;
