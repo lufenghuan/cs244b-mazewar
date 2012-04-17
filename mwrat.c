@@ -16,6 +16,13 @@ __mwr_init_state_pkt_timeout(struct timeval *timeout)
 	timeout->tv_usec = 500000;
 }
 
+static void
+__mwr_init_name_pkt_timeout(struct timeval *timeout)
+{
+	timeout->tv_sec  = 5;
+	timeout->tv_usec = 0;
+}
+
 int
 mwr_cons(mw_rat_t **r, mw_guid_t *id,
          mw_pos_t x, mw_pos_t y, mw_dir_t dir,
@@ -46,6 +53,7 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 	tmp->mwr_pkt_seqno    = 0;
 
 	__mwr_init_state_pkt_timeout(&tmp->mwr_state_pkt_timeout);
+	__mwr_init_name_pkt_timeout(&tmp->mwr_name_pkt_timeout);
 	gettimeofday(&tmp->mwr_lasttime, NULL);
 
 	if (id != NULL)
@@ -248,6 +256,9 @@ __mwr_update_timeouts(mw_rat_t *r)
 	mw_timeval_difference(&r->mwr_state_pkt_timeout,
 	                      &r->mwr_state_pkt_timeout, &diff);
 
+	mw_timeval_difference(&r->mwr_name_pkt_timeout,
+	                      &r->mwr_name_pkt_timeout, &diff);
+
 	gettimeofday(&r->mwr_lasttime, NULL);
 }
 
@@ -262,6 +273,17 @@ __mwr_state_pkt_timeout_triggered(mw_rat_t *r)
 	return 0;
 }
 
+static int
+__mwr_name_pkt_timeout_triggered(mw_rat_t *r)
+{
+	if (mw_timeval_timeout_triggered(&r->mwr_name_pkt_timeout)) {
+		__mwr_init_name_pkt_timeout(&r->mwr_name_pkt_timeout);
+		return 1;
+	}
+
+	return 0;
+}
+
 void
 mwr_update(mw_rat_t *r, int **maze)
 {
@@ -270,12 +292,22 @@ mwr_update(mw_rat_t *r, int **maze)
 
 	if (__mwr_state_pkt_timeout_triggered(r))
 		mwr_send_state_pkt(r);
+
+	if (__mwr_name_pkt_timeout_triggered(r))
+		mwr_send_name_pkt(r);
+}
+
+void
+mwr_set_addr(mw_rat_t *r, struct sockaddr *mcast, int socket)
+{
+	r->mwr_mcast_addr   = mcast;
+	r->mwr_mcast_socket = socket;
 }
 
 int
 mwr_send_state_pkt(mw_rat_t *r)
 {
-	mw_pkt_state pkt;
+	mw_pkt_state_t pkt;
 
 	ASSERT(r->mwr_mcast_addr != NULL);
 
@@ -302,9 +334,24 @@ mwr_send_state_pkt(mw_rat_t *r)
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 }
 
-void
-mwr_set_addr(mw_rat_t *r, struct sockaddr *mcast, int socket)
+int
+mwr_send_name_pkt(mw_rat_t *r)
 {
-	r->mwr_mcast_addr   = mcast;
-	r->mwr_mcast_socket = socket;
+	mw_pkt_nickname_t pkt;
+
+	ASSERT(r->mwr_mcast_addr != NULL);
+
+	pkt.mwpn_header.mwph_descriptor = MW_PKT_HDR_DESCRIPTOR_NICKNAME;
+	pkt.mwpn_header.mwph_mbz[0]     = 0;
+	pkt.mwpn_header.mwph_mbz[1]     = 0;
+	pkt.mwpn_header.mwph_mbz[2]     = 0;
+	pkt.mwpn_header.mwph_guid       = r->mwr_id;
+	pkt.mwpn_header.mwph_seqno      = r->mwr_pkt_seqno++;
+
+	strncpy((char *)&pkt.mwpn_nickname, r->mwr_name, MW_NICKNAME_LEN);
+	pkt.mwpn_nickname[MW_NICKNAME_LEN-1] = '\0';
+
+	/* XXX: Must swap pkt before sending it on the wire */
+	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_state), 0,
+	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 }

@@ -95,6 +95,7 @@ typedef struct mw_rat {
 	mw_seqno_t        mwr_pkt_seqno;
 
 	struct timeval    mwr_state_pkt_timeout;
+	struct timeval    mwr_name_pkt_timeout;
 	struct timeval    mwr_lasttime;
 
 	mw_pos_t          mwr_x_wipe;
@@ -121,8 +122,9 @@ int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
 int  mwr_fire_missile(mw_rat_t *r, int **maze);
 void mwr_update(mw_rat_t *r, int **maze);
-int  mwr_send_state_pkt(mw_rat_t *r);
 void mwr_set_addr(mw_rat_t *r, struct sockaddr *mcast, int socket);
+int  mwr_send_state_pkt(mw_rat_t *r);
+int  mwr_send_name_pkt(mw_rat_t *r);
 
 #define MW_PKT_HDR_DESCRIPTOR_STATE    0
 #define MW_PKT_HDR_DESCRIPTOR_NICKNAME 1
@@ -157,9 +159,10 @@ typedef struct mw_pkt_state {
 	uint64_t        mwps_crt;
 } mw_pkt_state_t;
 
+#define MW_NICKNAME_LEN 32
 typedef struct mw_pkt_nickname {
 	mw_pkt_header_t mwpn_header;
-	uint8_t         mwpn_nickname[32];
+	uint8_t         mwpn_nickname[MW_NICKNAME_LEN];
 } mw_pkt_nickname_t;
 
 typedef struct mw_pkt_tagged {
@@ -182,6 +185,7 @@ int      mw_timeval_timeout_triggered(const struct timeval *timeout);
 uint64_t mw_rand(void);
 void     mw_print_pkt_header(const mw_pkt_header_t *pkt);
 void     mw_print_pkt_state(const mw_pkt_state_t *pkt);
+void     mw_print_pkt_nickname(const mw_pkt_nickname_t *pkt);
 void     mw_timeval_sum(struct timeval *diff,
                         const struct timeval *x,
                         const struct timeval *y);

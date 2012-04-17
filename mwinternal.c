@@ -104,3 +104,11 @@ mw_print_pkt_state(const mw_pkt_state_t *pkt)
 	__PRINT(pkt->mwps_timestamp,      "%lx", "timestamp");
 	__PRINT(pkt->mwps_crt,            "%lx", "crt");
 }
+
+void
+mw_print_pkt_nickname(const mw_pkt_nickname_t *pkt)
+{
+	mw_print_pkt_header(&pkt->mwpn_header);
+
+	__PRINT(pkt->mwpn_nickname, "%s", "nickname");
+}
