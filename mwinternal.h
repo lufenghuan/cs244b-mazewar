@@ -174,13 +174,14 @@ typedef struct mw_pkt_leaving {
 	uint64_t        mwpl_leaving_guid;
 } mw_pkt_leaving_t;
 
-void mw_timeval_difference(struct timeval *diff, const struct timeval *x,
-                           const struct timeval *y);
-
-void mw_timeval_sum(struct timeval *diff, const struct timeval *x,
-                    const struct timeval *y);
-
-int  mw_timeval_timeout_triggered(const struct timeval *timeout);
+int      mw_timeval_timeout_triggered(const struct timeval *timeout);
+uint64_t mw_rand(void);
+void     mw_timeval_sum(struct timeval *diff,
+                        const struct timeval *x,
+                        const struct timeval *y);
+void     mw_timeval_difference(struct timeval *diff,
+                               const struct timeval *x,
+                               const struct timeval *y);
 
 #endif /* _MW_INTERNAL_H */
 

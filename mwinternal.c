@@ -60,3 +60,19 @@ mw_timeval_timeout_triggered(const struct timeval *timeout)
 	return ((timeout->tv_sec < 0) || (timeout->tv_sec  == 0 &&
 	                                  timeout->tv_usec <= 0));
 }
+
+uint64_t
+mw_rand(void)
+{
+	static int initialized = 0;
+	uint64_t rc = 0;
+	int i;
+
+	if (!initialized)
+		srand(time(0));
+
+	for (i = 0; i < 2; i++)
+		rc = (rc << (32 * i)) | (uint32_t) rand();
+
+	return rc;
+}

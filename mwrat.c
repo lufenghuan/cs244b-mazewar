@@ -29,7 +29,7 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 
 	INIT_LIST_HEAD(&tmp->mwr_list);
 	/* XXX: Not thread safe. Accessing Global */
-	tmp->mwr_id    = 0xABAD1DEA; /* TODO: Implement real ID */
+	tmp->mwr_id    = mw_rand();
 	tmp->mwr_x_pos = tmp->mwr_x_wipe = x;
 	tmp->mwr_y_pos = tmp->mwr_y_wipe = y;
 	tmp->mwr_dir   = dir;
@@ -270,7 +270,7 @@ mwr_send_state_pkt(mw_rat_t *r, struct sockaddr *addr, int socket)
 	pkt.mwps_missile_posdir         = 0xABAD1DEA;
 	pkt.mwps_score                  = 0xABAD1DEA;
 	pkt.mwps_timestamp              = 0xABAD1DEA;
-	pkt.mwps_crt                    = 0xABAD1DEA;
+	pkt.mwps_crt                    = mw_rand();
 
 	/* XXX: Must swap pkt before sending it on the wire */
 	return sendto(socket, &pkt, sizeof(mw_pkt_state), 0, addr,
