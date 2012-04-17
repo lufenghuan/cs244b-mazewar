@@ -33,6 +33,8 @@ typedef enum {
 	MWS_PHASE_ACTIVE
 } mws_phase_t;
 
+typedef uint64_t mw_seqno_t;
+
 typedef struct mw_state {
 	struct sockaddr   *mws_mcast_addr;
 	int                mws_mcast_socket;
@@ -87,6 +89,8 @@ typedef struct mw_rat {
 	char             *mwr_name;
 	mw_missile_t     *mwr_missile;
 
+	mw_seqno_t        mwr_pkt_seqno;
+
 	struct timeval    mwr_state_pkt_timeout;
 	struct timeval    mwr_lasttime;
 
@@ -125,8 +129,8 @@ int  mwr_send_state_pkt(mw_rat_t *r, struct sockaddr *addr, int socket);
 typedef struct mw_pkt_header {
 	uint8_t    mwph_descriptor;
 	uint8_t    mwph_mbz[3];
-	uint64_t   mwph_guid;
-	uint64_t   mwph_seqnum;
+	mw_guid_t  mwph_guid;
+	mw_seqno_t mwph_seqno;
 } mw_pkt_header_t;
 
 typedef struct mw_pkt_state {
@@ -161,8 +165,8 @@ typedef struct mw_pkt_tagged {
 
 typedef struct mw_pkt_ack {
 	mw_pkt_header_t mwpa_header;
-	uint64_t        mwpa_guid;
-	uint64_t        mwpa_seqnum;
+	mw_guid_t       mwpa_guid;
+	mw_seqno_t      mwpa_seqno;
 } mw_pkt_ack_t;
 
 typedef struct mw_pkt_leaving {

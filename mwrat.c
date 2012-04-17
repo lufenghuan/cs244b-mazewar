@@ -40,7 +40,8 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 		return -ENOMEM;
 	}
 
-	tmp->mwr_missile = NULL;
+	tmp->mwr_missile   = NULL;
+	tmp->mwr_pkt_seqno = 0;
 
 	__mwr_init_state_pkt_timeout(&tmp->mwr_state_pkt_timeout);
 	gettimeofday(&tmp->mwr_lasttime, NULL);
@@ -263,8 +264,8 @@ mwr_send_state_pkt(mw_rat_t *r, struct sockaddr *addr, int socket)
 	pkt.mwps_header.mwph_mbz[0]     = 0;
 	pkt.mwps_header.mwph_mbz[1]     = 0;
 	pkt.mwps_header.mwph_mbz[2]     = 0;
-	pkt.mwps_header.mwph_guid       = 0xABAD1DEA;
-	pkt.mwps_header.mwph_seqnum     = 0xABAD1DEA;
+	pkt.mwps_header.mwph_guid       = r->mwr_id;
+	pkt.mwps_header.mwph_seqno      = r->mwr_pkt_seqno++;
 	pkt.mwps_rat_posdir             = 0xABAD1DEA;
 	pkt.mwps_missile_posdir         = 0xABAD1DEA;
 	pkt.mwps_score                  = 0xABAD1DEA;
