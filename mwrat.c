@@ -40,8 +40,10 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 		return -ENOMEM;
 	}
 
-	tmp->mwr_missile   = NULL;
-	tmp->mwr_pkt_seqno = 0;
+	tmp->mwr_missile      = NULL;
+	tmp->mwr_mcast_addr   = NULL;
+	tmp->mwr_mcast_socket = -1;
+	tmp->mwr_pkt_seqno    = 0;
 
 	__mwr_init_state_pkt_timeout(&tmp->mwr_state_pkt_timeout);
 	gettimeofday(&tmp->mwr_lasttime, NULL);
@@ -245,19 +247,21 @@ __mwr_state_pkt_timeout_triggered(mw_rat_t *r)
 }
 
 void
-mwr_update(mw_rat_t *r, int **maze, struct sockaddr *addr, int socket)
+mwr_update(mw_rat_t *r, int **maze)
 {
 	__mwr_update_missile(r, maze);
 	__mwr_update_timeouts(r);
 
 	if (__mwr_state_pkt_timeout_triggered(r))
-		mwr_send_state_pkt(r, addr, socket);
+		mwr_send_state_pkt(r);
 }
 
 int
-mwr_send_state_pkt(mw_rat_t *r, struct sockaddr *addr, int socket)
+mwr_send_state_pkt(mw_rat_t *r)
 {
 	mw_pkt_state pkt;
+
+	ASSERT(r->mwr_mcast_addr != NULL);
 
 	/* TODO: Fill in pkt with actual state information */
 	pkt.mwps_header.mwph_descriptor = MW_PKT_HDR_DESCRIPTOR_STATE;
@@ -272,7 +276,19 @@ mwr_send_state_pkt(mw_rat_t *r, struct sockaddr *addr, int socket)
 	pkt.mwps_timestamp              = 0xABAD1DEA;
 	pkt.mwps_crt                    = mw_rand();
 
+	/* The timeout can be re-initialized because a state packet is
+	 * being transmitted. Keeps the caller from having to do this.
+	 */
+	__mwr_init_state_pkt_timeout(&r->mwr_state_pkt_timeout);
+
 	/* XXX: Must swap pkt before sending it on the wire */
-	return sendto(socket, &pkt, sizeof(mw_pkt_state), 0, addr,
-	              sizeof(struct sockaddr));
+	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_state), 0,
+	              r->mwr_mcast_addr, sizeof(struct sockaddr));
+}
+
+void
+mwr_set_addr(mw_rat_t *r, struct sockaddr *mcast, int socket)
+{
+	r->mwr_mcast_addr   = mcast;
+	r->mwr_mcast_socket = socket;
 }

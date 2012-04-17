@@ -89,6 +89,9 @@ typedef struct mw_rat {
 	char             *mwr_name;
 	mw_missile_t     *mwr_missile;
 
+	struct sockaddr  *mwr_mcast_addr;
+	int               mwr_mcast_socket;
+
 	mw_seqno_t        mwr_pkt_seqno;
 
 	struct timeval    mwr_state_pkt_timeout;
@@ -117,8 +120,9 @@ int  mwr_set_xpos(mw_rat_t *r, mw_pos_t x);
 int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
 int  mwr_fire_missile(mw_rat_t *r, int **maze);
-void mwr_update(mw_rat_t *r, int **maze, struct sockaddr *addr, int socket);
-int  mwr_send_state_pkt(mw_rat_t *r, struct sockaddr *addr, int socket);
+void mwr_update(mw_rat_t *r, int **maze);
+int  mwr_send_state_pkt(mw_rat_t *r);
+void mwr_set_addr(mw_rat_t *r, struct sockaddr *mcast, int socket);
 
 #define MW_PKT_HDR_DESCRIPTOR_STATE    0
 #define MW_PKT_HDR_DESCRIPTOR_NICKNAME 1

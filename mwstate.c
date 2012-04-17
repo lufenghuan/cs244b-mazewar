@@ -105,6 +105,7 @@ mws_add_rat(mw_state_t *s, mw_guid_t *id,
 	int rc;
 
 	rc = mwr_cons(&r, id, x, y, dir, name);
+	mwr_set_addr(r, s->mws_mcast_addr, s->mws_mcast_socket);
 
 	if (rc)
 		return rc;
@@ -138,8 +139,7 @@ __mws_update_rats(mw_state_t *s)
 
 	mw_rat_t *r;
 	list_for_each_entry(r, &s->mws_rats, mwr_list) {
-		mwr_update(r, s->mws_maze,
-		           s->mws_mcast_addr, s->mws_mcast_socket);
+		mwr_update(r, s->mws_maze);
 	}
 }
 
