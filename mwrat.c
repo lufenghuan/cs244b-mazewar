@@ -108,6 +108,7 @@ mwr_set_xpos(mw_rat_t *r, mw_pos_t x)
 {
 	r->mwr_x_wipe = r->mwr_x_pos;
 	r->mwr_x_pos  = x;
+	mwr_send_state_pkt(r);
 	return 0;
 }
 
@@ -116,6 +117,7 @@ mwr_set_ypos(mw_rat_t *r, mw_pos_t y)
 {
 	r->mwr_y_wipe = r->mwr_y_pos;
 	r->mwr_y_pos  = y;
+	mwr_send_state_pkt(r);
 	return 0;
 }
 
@@ -123,6 +125,7 @@ int
 mwr_set_dir(mw_rat_t *r, mw_dir_t dir)
 {
 	r->mwr_dir = dir;
+	mwr_send_state_pkt(r);
 	return 0;
 }
 
@@ -188,6 +191,8 @@ mwr_fire_missile(mw_rat_t *r, int **maze)
 	if (rc)
 		return rc;
 
+	/* Need to let peers know about this new missile. */
+	mwr_send_state_pkt(r);
 	return 0;
 }
 
@@ -195,18 +200,22 @@ static void
 __mwr_update_missile(mw_rat_t *r, int **maze)
 {
 	mw_missile_t *m = r->mwr_missile;
-	mw_pos_t x, y;
+	mw_pos_t xbefore, ybefore;
+	mw_pos_t xafter,  yafter;
 
 	if (m == NULL)
 		return;
 
+	mwm_get_xpos(m, &xbefore);
+	mwm_get_ypos(m, &ybefore);
+
 	mwm_update(m);
 
-	mwm_get_xpos(m, &x);
-	mwm_get_ypos(m, &y);
+	mwm_get_xpos(m, &xafter);
+	mwm_get_ypos(m, &yafter);
 
 	/* 1 == wall at position x, y */
-	if (maze[x][y] == 1) {
+	if (maze[xafter][yafter] == 1) {
 		/* Missile hit a wall, time to destroy it */
 
 		/* XXX: This is a bit of a hack, but the
@@ -218,6 +227,13 @@ __mwr_update_missile(mw_rat_t *r, int **maze)
 		mwm_dest(m);
 		r->mwr_missile = m = NULL;
 	}
+
+	/* A state packet must be sent on every state change, including
+	 * when a rat's missile changes position.
+	 */
+	if ((xbefore != xafter) || (ybefore != yafter))
+		mwr_send_state_pkt(r);
+
 }
 
 static void
