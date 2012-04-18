@@ -515,18 +515,8 @@ void sendPacketToPlayer(RatId ratId)
 
 void processPacket (MWEvent *eventPacket)
 {
-/*
-	MW244BPacket		*pack = eventPacket->eventDetail;
-	DataStructureX		*packX;
-
-	switch(pack->type) {
-	case PACKET_TYPE_X:
-	  packX = (DataStructureX *) &(pack->body);
-	  break;
-        case ...
-	}
-*/
-
+	mws_receive_pkt(M->state,
+	                (mw_pkt_header_t *)eventPacket->eventDetail);
 }
 
 /* ----------------------------------------------------------------------- */

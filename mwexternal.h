@@ -20,6 +20,7 @@ typedef enum {
 } mw_dir_t;
 
 typedef struct mw_state mw_state_t;
+typedef struct mw_pkt_header mw_pkt_header_t;
 
 /* Mazewar State Constructor */
 int mws_cons(mw_state_t **s);
@@ -50,6 +51,8 @@ int mws_set_rat_xpos(mw_state_t *s, mw_guid_t id, mw_pos_t x);
 int mws_set_rat_ypos(mw_state_t *s, mw_guid_t id, mw_pos_t y);
 int mws_set_rat_dir(mw_state_t *s, mw_guid_t id, mw_dir_t dir);
 int mws_fire_missile(mw_state_t *s, mw_guid_t id);
+
+void mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt);
 
 #endif /* _MW_EXTERNAL_H */
 

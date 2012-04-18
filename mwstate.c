@@ -206,4 +206,37 @@ mws_set_rat_dir(mw_state_t *s, mw_guid_t id, mw_dir_t dir)
 	return mwr_set_dir(r, dir);
 }
 
+void
+__mws_process_pkt_state(mw_state_t *s, mw_pkt_state_t *pkt)
+{
+	/* TODO: Add Implementation. */
+}
+
+void __mws_process_pkt_nickname(mw_state_t *s, mw_pkt_nickname_t *pkt)
+{
+	/* TODO: Add Implementation. */
+}
+
+void
+mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt)
+{
+	/* XXX: Must swap pkt before processing it */
+	switch (pkt->mwph_descriptor) {
+	case MW_PKT_HDR_DESCRIPTOR_STATE:
+		__mws_process_pkt_state(s, (mw_pkt_state_t *)pkt);
+		break;
+	case MW_PKT_HDR_DESCRIPTOR_NICKNAME:
+		__mws_process_pkt_nickname(s, (mw_pkt_nickname_t *)pkt);
+		break;
+	default:
+		/* A packet was received with an unknown descriptor
+		 * type, this _should_ never happen. In a development
+		 * build, ASSERT, otherwise this is a no-op and the
+		 * packet is dropped.
+		 */
+		ASSERT(0);
+		break;
+	}
+}
+
 /* vim: set tabstop=8 shiftwidth=8 noexpandtab: */

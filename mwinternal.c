@@ -85,12 +85,12 @@ mw_rand(void)
 void
 mw_print_pkt_header(const mw_pkt_header_t *pkt)
 {
-	__PRINT(pkt->mwph_descriptor, "%x",  "descriptor");
-	__PRINT(pkt->mwph_mbz[0],     "%x",  "mbz[0]");
-	__PRINT(pkt->mwph_mbz[1],     "%x",  "mbz[1]");
-	__PRINT(pkt->mwph_mbz[2],     "%x",  "mbz[2]");
-	__PRINT(pkt->mwph_guid,       "%lx", "guid");
-	__PRINT(pkt->mwph_seqno,      "%lx", "seqno");
+	__PRINT(pkt->mwph_descriptor, "0x%x",  "descriptor");
+	__PRINT(pkt->mwph_mbz[0],     "0x%x",  "mbz[0]");
+	__PRINT(pkt->mwph_mbz[1],     "0x%x",  "mbz[1]");
+	__PRINT(pkt->mwph_mbz[2],     "0x%x",  "mbz[2]");
+	__PRINT(pkt->mwph_guid,       "0x%lx", "guid");
+	__PRINT(pkt->mwph_seqno,      "0x%lx", "seqno");
 }
 
 void
@@ -98,11 +98,11 @@ mw_print_pkt_state(const mw_pkt_state_t *pkt)
 {
 	mw_print_pkt_header(&pkt->mwps_header);
 
-	__PRINT(pkt->mwps_rat_posdir,     "%x",  "rat_posdir");
-	__PRINT(pkt->mwps_missile_posdir, "%x",  "missile_posdir");
-	__PRINT(pkt->mwps_score,          "%x",  "score");
-	__PRINT(pkt->mwps_timestamp,      "%lx", "timestamp");
-	__PRINT(pkt->mwps_crt,            "%lx", "crt");
+	__PRINT(pkt->mwps_rat_posdir,     "0x%x",  "rat_posdir");
+	__PRINT(pkt->mwps_missile_posdir, "0x%x",  "missile_posdir");
+	__PRINT(pkt->mwps_score,          "0x%x",  "score");
+	__PRINT(pkt->mwps_timestamp,      "0x%lx", "timestamp");
+	__PRINT(pkt->mwps_crt,            "0x%lx", "crt");
 }
 
 void
