@@ -220,7 +220,7 @@ void __mws_process_pkt_nickname(mw_state_t *s, mw_pkt_nickname_t *pkt)
 void
 mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt)
 {
-	/* XXX: Must swap pkt before processing it */
+	/* TODO: Must swap pkt before processing it */
 	switch (pkt->mwph_descriptor) {
 	case MW_PKT_HDR_DESCRIPTOR_STATE:
 		__mws_process_pkt_state(s, (mw_pkt_state_t *)pkt);

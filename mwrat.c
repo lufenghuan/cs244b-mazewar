@@ -356,7 +356,7 @@ mwr_send_state_pkt(mw_rat_t *r)
 	 */
 	__mwr_init_state_pkt_timeout(&r->mwr_state_pkt_timeout);
 
-	/* XXX: Must swap pkt before sending it on the wire */
+	/* TODO: Must swap pkt before sending it on the wire */
 	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_state), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 }
@@ -378,7 +378,7 @@ mwr_send_name_pkt(mw_rat_t *r)
 	strncpy((char *)&pkt.mwpn_nickname, r->mwr_name, MW_NICKNAME_LEN);
 	pkt.mwpn_nickname[MW_NICKNAME_LEN-1] = '\0';
 
-	/* XXX: Must swap pkt before sending it on the wire */
+	/* TODO: Must swap pkt before sending it on the wire */
 	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_state), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 }
