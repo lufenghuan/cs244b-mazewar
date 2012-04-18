@@ -304,6 +304,31 @@ mwr_set_addr(mw_rat_t *r, struct sockaddr *mcast, int socket)
 	r->mwr_mcast_socket = socket;
 }
 
+void
+__mwr_posdir_pack(uint32_t *posdir, mw_pos_t _x, mw_pos_t _y, mw_dir_t _dir)
+{
+	/* Make local copies of position and direction with known sizes.
+	 * This avoids confusion as to how many bit's mw_pos_t  and
+	 * mw_dir_t structures actually use. This assumes some internal
+	 * knowledge of the fact that mw_pos_t and mw_dir_t can be
+	 * directly mapped into a uint32_t without any loss of
+	 * information.
+	 */
+	uint32_t x = _x, y = _y, dir = _dir;
+
+	/* According to the Mazewar Protocol Spec, the position and
+	 * direction need to be packed into a 32-bit word like so:
+	 *
+	 *          +------------+------------+-----------+
+	 * posdir = | Position x | Position Y | Direction |
+	 *          +------------+------------+-----------+
+	 *          |- 15 bits --|-- 15 bits -|-- 2 bits -|
+	 */
+	*posdir = ((x   & 0x00007fff) << 17) +
+	          ((y   & 0x00007fff) <<  2) +
+	          ((dir & 0x00000003) <<  0);
+}
+
 int
 mwr_send_state_pkt(mw_rat_t *r)
 {
@@ -318,11 +343,13 @@ mwr_send_state_pkt(mw_rat_t *r)
 	pkt.mwps_header.mwph_mbz[2]     = 0;
 	pkt.mwps_header.mwph_guid       = r->mwr_id;
 	pkt.mwps_header.mwph_seqno      = r->mwr_pkt_seqno++;
-	pkt.mwps_rat_posdir             = 0xABAD1DEA;
 	pkt.mwps_missile_posdir         = 0xABAD1DEA;
 	pkt.mwps_score                  = 0xABAD1DEA;
 	pkt.mwps_timestamp              = 0xABAD1DEA;
 	pkt.mwps_crt                    = mw_rand();
+
+	__mwr_posdir_pack(&pkt.mwps_rat_posdir, r->mwr_x_pos,
+	                                        r->mwr_y_pos, r->mwr_dir);
 
 	/* The timeout can be re-initialized because a state packet is
 	 * being transmitted. Keeps the caller from having to do this.
