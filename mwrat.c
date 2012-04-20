@@ -57,6 +57,8 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 	__mwr_init_name_pkt_timeout(&tmp->mwr_name_pkt_timeout);
 	gettimeofday(&tmp->mwr_lasttime, NULL);
 
+	tmp->mwr_send_pkts = 0;
+
 	if (id != NULL)
 		*id = tmp->mwr_id;
 
@@ -136,6 +138,13 @@ mwr_set_dir(mw_rat_t *r, mw_dir_t dir)
 {
 	r->mwr_dir = dir;
 	mwr_send_state_pkt(r);
+	return 0;
+}
+
+int
+mwr_set_send_pkts_flag(mw_rat_t *r, int send_pkts)
+{
+	r->mwr_send_pkts = send_pkts;
 	return 0;
 }
 
@@ -321,6 +330,9 @@ mwr_send_state_pkt(mw_rat_t *r)
 {
 	mw_pkt_state_t pkt;
 
+	if (!r->mwr_send_pkts)
+		return 0;
+
 	ASSERT(r->mwr_mcast_addr != NULL);
 
 	/* TODO: Fill in pkt with actual state information */
@@ -352,6 +364,9 @@ int
 mwr_send_name_pkt(mw_rat_t *r)
 {
 	mw_pkt_nickname_t pkt;
+
+	if (!r->mwr_send_pkts)
+		return 0;
 
 	ASSERT(r->mwr_mcast_addr != NULL);
 

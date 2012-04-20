@@ -101,6 +101,8 @@ typedef struct mw_rat {
 
 	mw_pos_t          mwr_x_wipe;
 	mw_pos_t          mwr_y_wipe;
+
+	int               mwr_send_pkts;
 } mw_rat_t;
 
 /* Mazewar Rat Constructor
@@ -121,6 +123,7 @@ int  mwr_cmp_id(mw_rat_t *r, mw_guid_t id);
 int  mwr_set_xpos(mw_rat_t *r, mw_pos_t x);
 int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
+int  mwr_set_send_pkts_flag(mw_rat_t *r, int send_pkts);
 int  mwr_get_score(mw_rat_t *r, mw_score_t *score);
 int  mwr_fire_missile(mw_rat_t *r, int **maze);
 void mwr_update(mw_rat_t *r, int **maze);

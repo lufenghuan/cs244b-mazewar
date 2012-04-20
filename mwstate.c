@@ -205,6 +205,16 @@ mws_set_rat_dir(mw_state_t *s, mw_guid_t id, mw_dir_t dir)
 }
 
 int
+mws_set_rat_send_pkts_flag(mw_state_t *s, mw_guid_t id, int send_pkts)
+{
+	mw_rat_t *r = __mws_get_rat(s, id);
+	if (r == NULL)
+		return -1;
+
+	return mwr_set_send_pkts_flag(r, send_pkts);
+}
+
+int
 mws_get_rat_score(mw_state_t *s, mw_guid_t id, mw_score_t *score)
 {
 	mw_rat_t *r = __mws_get_rat(s, id);
