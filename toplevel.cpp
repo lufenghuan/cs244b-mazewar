@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 
 	mws_add_rat(M->state, &M->local_id, MY_X_LOC, MY_Y_LOC, MY_MW_DIR_T,
 	                      M->myName_);
-	mws_set_rat_send_pkts_flag(M->state, M->local_id, 1);
+	mws_set_local_rat(M->state, M->local_id);
 
 	/* XXX: This is called in MazeInit, is it needed here too?
 	 *      Disabling until further understood why it's here.

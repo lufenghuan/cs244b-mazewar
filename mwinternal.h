@@ -40,6 +40,7 @@ typedef struct mw_state {
 	int                mws_mcast_socket;
 
 	struct list_head   mws_rats;
+	mw_guid_t          mws_local_rat_id;
 
 	mws_phase_t        mws_phase;
 	struct timeval     mws_elapsedtime;
@@ -124,6 +125,7 @@ int  mwr_set_xpos(mw_rat_t *r, mw_pos_t x);
 int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
 int  mwr_set_send_pkts_flag(mw_rat_t *r, int send_pkts);
+int  mwr_set_id(mw_rat_t *r, mw_guid_t guid);
 int  mwr_get_score(mw_rat_t *r, mw_score_t *score);
 int  mwr_fire_missile(mw_rat_t *r, int **maze);
 void mwr_update(mw_rat_t *r, int **maze);

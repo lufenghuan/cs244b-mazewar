@@ -37,6 +37,7 @@ mws_cons(mw_state_t **s)
 		return -ENOMEM;
 
 	INIT_LIST_HEAD(&tmp->mws_rats);
+	tmp->mws_local_rat_id = -1;
 
 	tmp->mws_phase = MWS_PHASE_DISCOVERY;
 	__mws_init_elapsedtime(&tmp->mws_elapsedtime);
@@ -175,6 +176,18 @@ mws_update(mw_state_t *s)
 }
 
 int
+mws_set_local_rat(mw_state_t *s, mw_guid_t id)
+{
+	s->mws_local_rat_id = id;
+
+	mw_rat_t *r = __mws_get_rat(s, s->mws_local_rat_id);
+	if (r == NULL)
+		return -1;
+
+	return mwr_set_send_pkts_flag(r, 1);
+}
+
+int
 mws_set_rat_xpos(mw_state_t *s, mw_guid_t id, mw_pos_t x)
 {
 	mw_rat_t *r = __mws_get_rat(s, id);
@@ -205,16 +218,6 @@ mws_set_rat_dir(mw_state_t *s, mw_guid_t id, mw_dir_t dir)
 }
 
 int
-mws_set_rat_send_pkts_flag(mw_state_t *s, mw_guid_t id, int send_pkts)
-{
-	mw_rat_t *r = __mws_get_rat(s, id);
-	if (r == NULL)
-		return -1;
-
-	return mwr_set_send_pkts_flag(r, send_pkts);
-}
-
-int
 mws_get_rat_score(mw_state_t *s, mw_guid_t id, mw_score_t *score)
 {
 	mw_rat_t *r = __mws_get_rat(s, id);
@@ -222,6 +225,16 @@ mws_get_rat_score(mw_state_t *s, mw_guid_t id, mw_score_t *score)
 		return -1;
 
 	return mwr_get_score(r, score);
+}
+
+int
+__mws_set_rat_id(mw_state_t *s, mw_guid_t old, mw_guid_t _new)
+{
+	mw_rat_t *r = __mws_get_rat(s, old);
+	if (r == NULL)
+		return -1;
+
+	return mwr_set_id(r, _new);
 }
 
 void
@@ -237,15 +250,16 @@ __mws_process_pkt_state(mw_state_t *s, mw_pkt_state_t *pkt)
 
 	r = __mws_get_rat(s, guid);
 	if (r == NULL) {
-		mws_add_rat(s, NULL, x, y, dir, DEFAULT_RAT_NAME);
+		mw_guid_t tmp;
+		mws_add_rat(s, &tmp, x, y, dir, DEFAULT_RAT_NAME);
+		__mws_set_rat_id(s, tmp, guid);
 		return;
 	}
 
-	/* TODO: If rat is already part of the state's list of rats, we
-	 *       need to process this packet by updating the local
-	 *       representation with the position, direction, etc. from
-	 *       this packet.
-	 */
+	/* TODO: Still need to update score, missile, etc. */
+	mwr_set_xpos(r, x);
+	mwr_set_ypos(r, y);
+	mwr_set_dir(r, dir);
 }
 
 void __mws_process_pkt_nickname(mw_state_t *s, mw_pkt_nickname_t *pkt)
@@ -257,6 +271,10 @@ void
 mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt)
 {
 	/* TODO: Must swap pkt before processing it */
+
+	if (s->mws_local_rat_id == pkt->mwph_guid)
+		return; /* Ignore our own local rat's packets */
+
 	switch (pkt->mwph_descriptor) {
 	case MW_PKT_HDR_DESCRIPTOR_STATE:
 		__mws_process_pkt_state(s, (mw_pkt_state_t *)pkt);

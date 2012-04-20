@@ -48,10 +48,10 @@ void mws_render_draw(const mw_state_t *s);
 
 void mws_update(mw_state_t *s);
 
+int mws_set_local_rat(mw_state_t *s, mw_guid_t id);
 int mws_set_rat_xpos(mw_state_t *s, mw_guid_t id, mw_pos_t x);
 int mws_set_rat_ypos(mw_state_t *s, mw_guid_t id, mw_pos_t y);
 int mws_set_rat_dir(mw_state_t *s, mw_guid_t id, mw_dir_t dir);
-int mws_set_rat_send_pkts_flag(mw_state_t *s, mw_guid_t id, int send_pkts);
 int mws_get_rat_score(mw_state_t *s, mw_guid_t id, mw_score_t *score);
 int mws_fire_missile(mw_state_t *s, mw_guid_t id);
 

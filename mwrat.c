@@ -149,6 +149,13 @@ mwr_set_send_pkts_flag(mw_rat_t *r, int send_pkts)
 }
 
 int
+mwr_set_id(mw_rat_t *r, mw_guid_t id)
+{
+	r->mwr_id = id;
+	return 0;
+}
+
+int
 mwr_get_score(mw_rat_t *r, mw_score_t *score)
 {
 	*score = r->mwr_score;
