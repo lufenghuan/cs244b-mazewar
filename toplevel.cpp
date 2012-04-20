@@ -335,10 +335,13 @@ void peekStop()
 
 void shoot()
 {
-	M->scoreIs( M->score().value()-1 );
-	UpdateScoreCard(M->myRatId().value());
-
+	mw_score_t score;
 	mws_fire_missile(M->state, M->local_id);
+	/* XXX: Should check return code in case of error. */
+	mws_get_rat_score(M->state, M->local_id, &score);
+
+	M->scoreIs(score);
+	UpdateScoreCard(M->myRatId().value());
 }
 
 /* ----------------------------------------------------------------------- */

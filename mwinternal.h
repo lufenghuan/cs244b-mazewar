@@ -88,6 +88,7 @@ typedef struct mw_rat {
 	mw_dir_t          mwr_dir;
 	char             *mwr_name;
 	mw_missile_t     *mwr_missile;
+	mw_score_t        mwr_score;
 
 	struct sockaddr  *mwr_mcast_addr;
 	int               mwr_mcast_socket;
@@ -120,6 +121,7 @@ int  mwr_cmp_id(mw_rat_t *r, mw_guid_t id);
 int  mwr_set_xpos(mw_rat_t *r, mw_pos_t x);
 int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
+int  mwr_get_score(mw_rat_t *r, mw_score_t *score);
 int  mwr_fire_missile(mw_rat_t *r, int **maze);
 void mwr_update(mw_rat_t *r, int **maze);
 void mwr_set_addr(mw_rat_t *r, struct sockaddr *mcast, int socket);

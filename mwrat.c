@@ -48,6 +48,7 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 	}
 
 	tmp->mwr_missile      = NULL;
+	tmp->mwr_score        = 0;
 	tmp->mwr_mcast_addr   = NULL;
 	tmp->mwr_mcast_socket = -1;
 	tmp->mwr_pkt_seqno    = 0;
@@ -96,6 +97,7 @@ mwr_render_draw(const mw_rat_t *r)
 	if (r->mwr_missile != NULL)
 		mwm_render_draw(r->mwr_missile);
 
+	/* Draw rat's arrow in top down view */
 	HackMazeBitmap(Loc(r->mwr_x_pos), Loc(r->mwr_y_pos),
 	               &normalArrows[r->mwr_dir]);
 }
@@ -134,6 +136,13 @@ mwr_set_dir(mw_rat_t *r, mw_dir_t dir)
 {
 	r->mwr_dir = dir;
 	mwr_send_state_pkt(r);
+	return 0;
+}
+
+int
+mwr_get_score(mw_rat_t *r, mw_score_t *score)
+{
+	*score = r->mwr_score;
 	return 0;
 }
 
@@ -198,6 +207,9 @@ mwr_fire_missile(mw_rat_t *r, int **maze)
 	rc = mwm_cons(&r->mwr_missile, NULL, x, y, r->mwr_dir);
 	if (rc)
 		return rc;
+
+	/* Each missile fired costs 1 point. */
+	r->mwr_score--;
 
 	/* Need to let peers know about this new missile. */
 	mwr_send_state_pkt(r);
