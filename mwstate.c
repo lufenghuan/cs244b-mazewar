@@ -5,6 +5,7 @@
 #include "mwinternal.h"
 
 #define SECS_IN_PHASE_DISCOVERY 5
+#define DEFAULT_RAT_NAME "unknown"
 
 static mw_rat_t *
 __mws_get_rat(mw_state_t *s, mw_guid_t id)
@@ -216,7 +217,25 @@ mws_get_rat_score(mw_state_t *s, mw_guid_t id, mw_score_t *score)
 void
 __mws_process_pkt_state(mw_state_t *s, mw_pkt_state_t *pkt)
 {
-	/* TODO: Add Implementation. */
+	mw_pos_t x, y;
+	mw_dir_t dir;
+	mw_guid_t guid;
+	mw_rat_t *r;
+
+	mw_posdir_unpack(pkt->mwps_rat_posdir, &x, &y, &dir);
+	guid = pkt->mwps_header.mwph_guid;
+
+	r = __mws_get_rat(s, guid);
+	if (r == NULL) {
+		mws_add_rat(s, NULL, x, y, dir, DEFAULT_RAT_NAME);
+		return;
+	}
+
+	/* TODO: If rat is already part of the state's list of rats, we
+	 *       need to process this packet by updating the local
+	 *       representation with the position, direction, etc. from
+	 *       this packet.
+	 */
 }
 
 void __mws_process_pkt_nickname(mw_state_t *s, mw_pkt_nickname_t *pkt)

@@ -188,6 +188,10 @@ uint64_t mw_rand(void);
 void     mw_print_pkt_header(const mw_pkt_header_t *pkt);
 void     mw_print_pkt_state(const mw_pkt_state_t *pkt);
 void     mw_print_pkt_nickname(const mw_pkt_nickname_t *pkt);
+void     mw_posdir_pack(uint32_t *posdir, mw_pos_t x, mw_pos_t y,
+                        mw_dir_t dir);
+void     mw_posdir_unpack(uint32_t posdir, mw_pos_t *x, mw_pos_t *y,
+                          mw_dir_t *dir);
 void     mw_timeval_sum(struct timeval *diff,
                         const struct timeval *x,
                         const struct timeval *y);

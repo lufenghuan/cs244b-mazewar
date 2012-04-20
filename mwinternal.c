@@ -112,3 +112,65 @@ mw_print_pkt_nickname(const mw_pkt_nickname_t *pkt)
 
 	__PRINT(pkt->mwpn_nickname, "%s", "nickname");
 }
+
+void
+mw_posdir_pack(uint32_t *posdir, mw_pos_t _x, mw_pos_t _y, mw_dir_t _dir)
+{
+	/* make local copies of position and direction with known sizes.
+	 * this avoids confusion as to how many bit's mw_pos_t  and
+	 * mw_dir_t structures actually use. this assumes some internal
+	 * knowledge of the fact that mw_pos_t and mw_dir_t can be
+	 * directly mapped into a uint32_t without any loss of
+	 * information.
+	 */
+	uint32_t x = _x, y = _y, dir = _dir;
+
+	/* according to the mazewar protocol spec, the position and
+	 * direction need to be packed into a 32-bit word like so:
+	 *
+	 *          +------------+------------+-----------+
+	 * posdir = | position x | position y | direction |
+	 *          +------------+------------+-----------+
+	 *          |- 15 bits --|-- 15 bits -|-- 2 bits -|
+	 */
+	*posdir = ((x   & 0x00007fff) << 17) +
+	          ((y   & 0x00007fff) <<  2) +
+	          ((dir & 0x00000003) <<  0);
+}
+
+void
+mw_posdir_unpack(uint32_t posdir, mw_pos_t *x, mw_pos_t *y, mw_dir_t *dir)
+{
+	uint32_t tmp_dir;
+	/* according to the mazewar protocol spec, the position and
+	 * direction are packed into a 32-bit word like so:
+	 *
+	 *          +------------+------------+-----------+
+	 * posdir = | position x | position y | direction |
+	 *          +------------+------------+-----------+
+	 *          |- 15 bits --|-- 15 bits -|-- 2 bits -|
+	 */
+	*x      = ((posdir >> 17) & 0x00007fff);
+	*y      = ((posdir >>  2) & 0x00007fff);
+	tmp_dir = ((posdir >>  0) & 0x00000003);
+
+	switch (tmp_dir) {
+	case 0:
+		*dir = MW_DIR_NORTH;
+		break;
+	case 1:
+		*dir = MW_DIR_SOUTH;
+		break;
+	case 2:
+		*dir = MW_DIR_EAST;
+		break;
+	case 3:
+		*dir = MW_DIR_WEST;
+		break;
+	default:
+		/* XXX: Should never reach here */
+		ASSERT(0);
+		break;
+	}
+}
+
