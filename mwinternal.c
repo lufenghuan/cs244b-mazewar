@@ -70,8 +70,10 @@ mw_rand(void)
 	uint64_t rc = 0;
 	int i;
 
-	if (!initialized)
+	if (!initialized) {
 		srand(time(0));
+		initialized = 1;
+	}
 
 	for (i = 0; i < 2; i++)
 		rc = (rc << (32 * i)) | (uint32_t) rand();
