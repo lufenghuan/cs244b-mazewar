@@ -1,0 +1,10 @@
+2011-04-19
+
+* Remove references to global game time.  We'll use arrival of
+  corresponding network packet as the timestamp for an event.
+
+* Explicitly state projectile speed of 2 tiles/sec.
+
+* Explicitly state network byte ordering.
+
+* Explicitly state values of direction fields in state packet.

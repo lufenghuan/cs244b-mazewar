@@ -30,12 +30,11 @@ defined packet types.
 \subsection{The Discovery Phase}
 \label{ssec:discovery}
 The discovery phase provides new players the ability to discover any
-currently active game.  This phase is also used to learn the global game
-time, which is discussed in Section \ref{ssec:gametime}.  While in this
-phase, the client does not send any outbound traffic and listens for a
-minimum of 5 seconds for any incoming Mazewar traffic from other active
-players. If there is no incoming traffic during this time, it is assumed
-there isn't a current game being played on the network.
+currently active game.  While in this phase, the client does not send
+any outbound traffic and listens for a minimum of 5 seconds for any
+incoming Mazewar traffic from other active players. If there is no
+incoming traffic during this time, it is assumed there isn't a current
+game being played on the network.
 
 \subsection{The Active Phase}
 During the active phase a player is actively participating in a Mazewar
@@ -58,7 +57,11 @@ The following packet types are defined by the protocol: \\ \\
 	Leaving    & Advertises a player leaving the game. \\ \hline
 	Request for Retransmission & Requests a client to retransmit a
 	                             packet \\ \hline
-\end{tabular}
+\end{tabular} \\ \\
+
+The size of all packet types including header and body is 64 bytes.
+Unused high-order bytes must be zero-filled.  Data transmitted over
+the network must be in network byte-order.
 
 \subsection{Packet Header}
 \begin{figure}[htbp]
@@ -114,30 +117,40 @@ requesting retransmission.
 			\bitbox{15}{Projectile Position Y} &
 			\bitbox{2}{PD} \\
 		\wordbox{1}{Player Score} \\
-		\wordbox{2}{Timestamp} \\
 		\wordbox{2}{Collision Resolution Token (CRT)}
 	\end{bytefield}
 	\caption{State Packet}
 \end{figure}
 
+\begin{figure}
+\centering
+	\begin{tabular}{|l|l|}
+		\hline
+		Direction & Value \\ \hline \hline
+		North & 0 \\ \hline
+		South & 1 \\ \hline
+		East & 2 \\ \hline
+		West & 3 \\ \hline
+	\end{tabular}
+	\caption{Values of the direction fields RD and PD in a state packet.}
+	\label{fig:dirfield}
+\end{figure}
+
 \subsubsection{Rat Position X, Rat Position Y, and Rat Direction (RD)}
 The maze coordinates of the rat and the direction it is facing.
+The values and meanings of the RD field are listed in Figure
+\ref{fig:dirfield}.
+
 
 \subsubsection{Projectile Position X, Projectile Position Y, and
                Projectile Direction (PD)}
 The maze coordinates of the rat's projectile and the direction it is
-travelling. If no projectile is active, the word containing these
-fields must be \texttt{0xffffffff}.
+travelling. If no projectile is active, the word containing these fields
+must be \texttt{0xffffffff}.  The values and meanings of the PD field
+are listed in Figure \ref{fig:dirfield}.
 
 \subsubsection{Player Score}
 A signed value representing the player's current score.
-
-\subsubsection{Timestamp}
-Represents the global game time $G$ at which the packet was transmitted.
-$G$ is defined as
-\[G=E+t\] where $E$ is the local epoch (see Section
-\ref{ssec:gametime}), and $t$ is the number of milliseconds elapsed
-since $E$ was initialized.
 
 \subsubsection{Collision Resolution Token}
 A 64-bit value randomly generated for each packet. This is used to
@@ -159,7 +172,6 @@ resolve timing conflicts. See Sections \ref{ssec:collision} and
 A 32 character null-terminated string representing the player's
 nickname.
 
-\newpage
 \subsection{Tagged Packet}
 \begin{figure}[htbp]
 \centering
@@ -232,19 +244,29 @@ event causing it to change its local state. Local state includes
 player position and direction, projectile position and direction, and
 score. In addition, it must send at least one state packet every 500ms.
 
-\subsection{Collisions}
+\subsection{Projectile Behavior}
+Projectiles travel at a rate of two tiles per second in the direction
+the shooting rat is facing at launch time.  A rat may have at most one
+live projectile at a time.  A projectile ceases to be live after
+colliding with a wall or another rat, at which point the owning rat
+immediately regains the ability to shoot another projectile.
+
+\subsection{Collision Definition}
 \label{ssec:collision}
 A collision is defined as two or more objects attempting to occupy the
-same cell at the same time. An object may be a rat or a projectile. Two
-events are defined to occur at the \textit{same time} if their
-timestamps are within 250ms of each other.
+same cell at the same time. An object may be a rat or a projectile.  For
+the purposes of collision detection, state transitions of remote objects
+are locally treated as if they occurred at the instant the corresponding
+packet is being processed.
 
-\subsection{Player Movement Collision Resolution}
+\subsection{Rat Collision Resolution}
 If a collision occurs between two rats, the contended tile will be
 occupied by the rat whose \textit{state packet} contained the lowest CRT. The
-other rat must revert to its previous position.
+other rat must revert to its previous position.  When reverting to a
+previous position the CRT will be set to zero to ensure the reverting
+client has priority in any resulting collisions.
 
-\subsubsection{Tag Detection}
+\subsection{Tag Detection}
 \label{ssec:tagging}
 A tag occurs when a projectile collides with a rat. The determination
 that a tag has occurred is made at the tagged client, and this client is
@@ -253,9 +275,8 @@ The tagged client must continue to retransmit the \textit{tagged packet}
 every 500ms until an acknowledgement is received or the shooter has left
 the game.
 
-\subsubsection{Contended Tag Resolution}
 If there is ambiguity regarding which remote client tagged the local
-client then the method of awarding the tag is implementation defined, so
+client then the method of awarding the tag is implementation-defined, so
 long as exactly one shooter is selected.
 
 \subsection{Joining a Game}
@@ -284,39 +305,22 @@ removed from one another's game state.   Because remote client state
 is dynamically discovered from received traffic, the game will converge
 back to a consistent state when communication is restored.
 
-\subsection{Game Time Management}
-\label{ssec:gametime}
-A client joining the game establishes a local time epoch during the
-discovery phase.  This epoch must be derived from the timestamps of
-received state packets.  In this way the local time epoch will be
-synchronized with the peer game times within the network latency.  If no
-traffic is received during the discovery phase then the client must set
-its epoch to zero.  It is assumed that system clock drift between
-clients is negligible.
+\section{Possible Inconsistencies}
 
-\subsection{Possible Inconsistencies}
-
-\subsubsection{Packet Loss}
+\subsection{Packet Loss}
 Packet loss due to a transient network disruption may lead to temporary
 inconsistencies such as undetected collisions.  Such temporary artifacts
 are acceptable because the game state will converge back to a consistent
 state when the disruption subsides.  This assurance is provided by the
 idempotency of state packets since they use absolute position values.
 
-\subsubsection{Out-of-Order Packet Delivery}
+\subsection{Out-of-Order Packet Delivery}
 Processing state packets out of order could lead to erratic movement of
 remote objects.  Therefore packets received with lower sequence numbers
 than the most recently processed packet for a given client must be
 dropped.
 
-\subsubsection{Clock Drift}
-The assumption of negligible clock drift may prove to be unwarranted.
-Significant drift could lead undetected collisions.  The simplest way to
-handle this problem may be to abort the game if significant time skew is
-detected.  Less disruptive but more complex solutions could correct for
-drift or identify individual offending clients to evict from the game.
-
-\subsubsection{GUID collisions}
+\subsection{GUID collisions}
 It is technically possible for two clients to randomly generate the same
 64-bit GUID.  While exceedingly unlikely if a high quality random number
 generator is used, such an event would cause unacceptable global
