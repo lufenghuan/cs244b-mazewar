@@ -15,6 +15,23 @@
  */
 #define NULL_MISSILE_POSDIR 0xffffffff
 
+typedef struct mw_index_hole {
+	list_head    mwih_list;
+	unsigned int mwih_index;
+} mw_index_hole_t;
+
+static unsigned int mw_index = 0;
+
+/* As rat's leave the game, there needs to be a mechanism to reuse the
+ * mw_index values that these rats were using. Originally, a
+ * monotonically increasing index value was used to assign indexes to
+ * new rats. This created holes in the currently in use indexes as rats
+ * left the game. To fix this, these holes are tracked as rats leave,
+ * and can then be reused when a new rat is created (rather than
+ * incrementing the mw_index global and using that value).
+ */
+LIST_HEAD(mw_index_holes);
+
 static void
 __mwr_init_state_pkt_timeout(struct timeval *timeout)
 {
@@ -34,8 +51,8 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
          mw_pos_t x, mw_pos_t y, mw_dir_t dir,
          const char *name)
 {
-	static int mazewar_index = 0;
 	mw_rat_t *tmp;
+	mw_index_hole_t *h;
 
 	tmp = (mw_rat_t *)malloc(sizeof(mw_rat_t));
 	if (tmp == NULL)
@@ -44,10 +61,26 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 	INIT_LIST_HEAD(&tmp->mwr_list);
 	/* XXX: Not thread safe. Accessing Global */
 	tmp->mwr_id       = mw_rand();
-	tmp->mwr_mw_index = mazewar_index++;
 	tmp->mwr_x_pos    = tmp->mwr_x_wipe = x;
 	tmp->mwr_y_pos    = tmp->mwr_y_wipe = y;
 	tmp->mwr_dir      = dir;
+
+	/* XXX: Not thread safe. Accessing global. */
+	if (list_empty(&mw_index_holes)) {
+		tmp->mwr_mw_index = mw_index++;
+	} else {
+		/* Grab the first index in the list of holes and use
+		 * that as this rat's mw_index value.
+		 */
+		h = list_entry(mw_index_holes.next, mw_index_hole_t,
+		               mwih_list);
+
+		tmp->mwr_mw_index = h->mwih_index;
+
+		/* Delete this hole as it has been recycled */
+		list_del(&h->mwih_list);
+		free(h);
+	}
 
 	tmp->mwr_name  = strdup(name);
 	if (tmp->mwr_name == NULL) {
@@ -77,6 +110,8 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 int
 mwr_dest(mw_rat_t *r)
 {
+	int rc = 0;
+
 	/* If it is on a list, remove it from the list */
 	if (!list_empty(&r->mwr_list))
 		list_del(&r->mwr_list);
@@ -87,8 +122,17 @@ mwr_dest(mw_rat_t *r)
 	ClearRatPosition(r->mwr_mw_index);
 	mwr_send_leaving_pkt(r);
 
+	mw_index_hole_t *h = (mw_index_hole_t *)malloc(sizeof(mw_index_hole_t));
+	if (h == NULL) {
+		rc = -ENOMEM;
+	} else {
+		/* XXX: Not thread safe. Accessing global */
+		list_add_tail(&h->mwih_list, &mw_index_holes);
+		h->mwih_index = r->mwr_mw_index;
+	}
+
 	free(r);
-	return 0;
+	return rc;
 }
 
 /* XXX: This should really be in the same file as the other BitCell's,

@@ -19,6 +19,11 @@ struct list_head {
 #define list_entry(ptr, type, member) \
 	container_of(ptr, type, member)
 
+#define LIST_HEAD_INIT(name) { &(name), &(name) }
+
+#define LIST_HEAD(name) \
+	struct list_head name = LIST_HEAD_INIT(name)
+
 static inline void INIT_LIST_HEAD(struct list_head *list)
 {
 	list->next = list;
