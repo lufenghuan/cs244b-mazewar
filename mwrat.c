@@ -455,6 +455,8 @@ mwr_send_name_pkt(mw_rat_t *r)
 	strncpy((char *)&pkt.mwpn_nickname, r->mwr_name, MW_NICKNAME_LEN);
 	pkt.mwpn_nickname[MW_NICKNAME_LEN-1] = '\0';
 
+	memset(pkt.mwpn_mbz, 0, sizeof(pkt.mwpn_mbz));
+
 	/* TODO: Must swap pkt before sending it on the wire */
 	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_state), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));

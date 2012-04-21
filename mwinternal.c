@@ -117,9 +117,17 @@ mw_print_pkt_state(const mw_pkt_state_t *pkt)
 void
 mw_print_pkt_nickname(const mw_pkt_nickname_t *pkt)
 {
+	unsigned int i;
+	char buf[16];
+
 	mw_print_pkt_header(&pkt->mwpn_header);
 
 	__PRINT(pkt->mwpn_nickname, "%s", "nickname");
+
+	for (i = 0; i < sizeof(pkt->mwpn_mbz); i++) {
+		snprintf(buf, 16, "mbz[%i]", i);
+		__PRINT(pkt->mwpn_mbz[i], "0x%x", buf);
+	}
 }
 
 void

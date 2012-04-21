@@ -180,6 +180,9 @@ typedef struct mw_pkt_state {
 typedef struct mw_pkt_nickname {
 	mw_pkt_header_t mwpn_header;
 	uint8_t         mwpn_nickname[MW_NICKNAME_LEN];
+
+	/* Pad to total size of 64-bytes */
+	uint8_t mwpn_mbz[12];
 } mw_pkt_nickname_t;
 
 typedef struct mw_pkt_tagged {
