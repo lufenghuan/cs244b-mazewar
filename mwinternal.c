@@ -161,14 +161,15 @@ mw_posdir_pack(uint32_t *posdir, mw_pos_t _x, mw_pos_t _y, mw_dir_t _dir)
 	/* according to the mazewar protocol spec, the position and
 	 * direction need to be packed into a 32-bit word like so:
 	 *
+	 *           0         14 15        29 30       31
 	 *          +------------+------------+-----------+
 	 * posdir = | position x | position y | direction |
 	 *          +------------+------------+-----------+
 	 *          |- 15 bits --|-- 15 bits -|-- 2 bits -|
 	 */
-	*posdir = ((x   & 0x00007fff) << 17) +
-	          ((y   & 0x00007fff) <<  2) +
-	          ((dir & 0x00000003) <<  0);
+	*posdir = ((x   & 0x00007fff) <<  0) +
+	          ((y   & 0x00007fff) << 15) +
+	          ((dir & 0x00000003) << 30);
 }
 
 void
@@ -178,14 +179,15 @@ mw_posdir_unpack(uint32_t posdir, mw_pos_t *x, mw_pos_t *y, mw_dir_t *dir)
 	/* according to the mazewar protocol spec, the position and
 	 * direction are packed into a 32-bit word like so:
 	 *
+	 *           0         14 15        29 30       31
 	 *          +------------+------------+-----------+
 	 * posdir = | position x | position y | direction |
 	 *          +------------+------------+-----------+
 	 *          |- 15 bits --|-- 15 bits -|-- 2 bits -|
 	 */
-	*x      = ((posdir >> 17) & 0x00007fff);
-	*y      = ((posdir >>  2) & 0x00007fff);
-	tmp_dir = ((posdir >>  0) & 0x00000003);
+	*x      = ((posdir >>  0) & 0x00007fff);
+	*y      = ((posdir >> 15) & 0x00007fff);
+	tmp_dir = ((posdir >> 30) & 0x00000003);
 
 	switch (tmp_dir) {
 	case 0:
