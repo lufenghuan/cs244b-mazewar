@@ -142,21 +142,60 @@ static	Direction	_leftTurn[NDIRECTION] =	{WEST, EAST, NORTH, SOUTH};
 static	Direction	_rightTurn[NDIRECTION] ={EAST, WEST, SOUTH, NORTH};
 
 void
-aboutFace(void)
+__aboutFace(void)
 {
 	M->dirIs(_aboutFace[MY_DIR]);
-	mws_set_rat_dir(M->state, M->local_id, MY_MW_DIR_T);
 	updateView = TRUE;
+}
+
+void
+aboutFace(void)
+{
+	int rc;
+
+	__aboutFace();
+
+	rc = mws_set_rat_dir(M->state, M->local_id, MY_MW_DIR_T);
+	if (rc != 0)
+		goto undo;
+
+	return;
+
+undo:
+	__aboutFace();
 }
 
 /* ----------------------------------------------------------------------- */
 
 void
-leftTurn(void)
+__leftTurn(void)
 {
 	M->dirIs(_leftTurn[MY_DIR]);
-	mws_set_rat_dir(M->state, M->local_id, MY_MW_DIR_T);
 	updateView = TRUE;
+}
+
+void
+__rightTurn(void)
+{
+	M->dirIs(_rightTurn[MY_DIR]);
+	updateView = TRUE;
+}
+
+void
+leftTurn(void)
+{
+	int rc;
+
+	__leftTurn();
+
+	rc = mws_set_rat_dir(M->state, M->local_id, MY_MW_DIR_T);
+	if (rc != 0)
+		goto undo;
+
+	return;
+
+undo:
+	__rightTurn();
 }
 
 /* ----------------------------------------------------------------------- */
@@ -164,9 +203,18 @@ leftTurn(void)
 void
 rightTurn(void)
 {
-	M->dirIs(_rightTurn[MY_DIR]);
-	mws_set_rat_dir(M->state, M->local_id, MY_MW_DIR_T);
-	updateView = TRUE;
+	int rc;
+
+	__rightTurn();
+
+	rc = mws_set_rat_dir(M->state, M->local_id, MY_MW_DIR_T);
+	if (rc != 0)
+		goto undo;
+
+	return;
+
+undo:
+	__leftTurn();
 }
 
 /* ----------------------------------------------------------------------- */

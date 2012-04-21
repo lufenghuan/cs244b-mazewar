@@ -90,8 +90,10 @@ mws_set_addr(mw_state_t *s, struct sockaddr *mcast, int socket)
 int
 mws_fire_missile(mw_state_t *s, mw_guid_t id)
 {
-	mw_rat_t *r = __mws_get_rat(s, id);
+	if (s->mws_phase == MWS_PHASE_DISCOVERY)
+		return -1;
 
+	mw_rat_t *r = __mws_get_rat(s, id);
 	if (r == NULL)
 		return -1;
 
@@ -220,6 +222,9 @@ mws_set_rat_xpos(mw_state_t *s, mw_guid_t id, mw_pos_t x)
 {
 	mw_pos_t y;
 
+	if (s->mws_phase == MWS_PHASE_DISCOVERY)
+		return -1;
+
 	mw_rat_t *r = __mws_get_rat(s, id);
 	if (r == NULL)
 		return -1;
@@ -236,6 +241,9 @@ mws_set_rat_ypos(mw_state_t *s, mw_guid_t id, mw_pos_t y)
 {
 	mw_pos_t x;
 
+	if (s->mws_phase == MWS_PHASE_DISCOVERY)
+		return -1;
+
 	mw_rat_t *r = __mws_get_rat(s, id);
 	if (r == NULL)
 		return -1;
@@ -250,6 +258,9 @@ mws_set_rat_ypos(mw_state_t *s, mw_guid_t id, mw_pos_t y)
 int
 mws_set_rat_dir(mw_state_t *s, mw_guid_t id, mw_dir_t dir)
 {
+	if (s->mws_phase == MWS_PHASE_DISCOVERY)
+		return -1;
+
 	mw_rat_t *r = __mws_get_rat(s, id);
 	if (r == NULL)
 		return -1;
