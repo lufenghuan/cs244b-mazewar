@@ -67,7 +67,7 @@ SOFTWARE.
 /* Feel free to modify.  This is the simplest version we came up with */
 
 /* A unique MAZEPORT will be assigned to your team by the TA */
-#define	MAZEPORT	5000
+#define	MAZEPORT	5006
 /* The multicast group for Mazewar is 224.1.1.1 */
 #define MAZEGROUP       0xe0010101
 #define	MAZESERVICE	"mazewar244B"
