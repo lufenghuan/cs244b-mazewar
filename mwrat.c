@@ -84,6 +84,7 @@ mwr_dest(mw_rat_t *r)
 	if (r->mwr_name != NULL)
 		free(r->mwr_name);
 
+	ClearRatPosition(r->mwr_mw_index);
 	mwr_send_leaving_pkt(r);
 
 	free(r);

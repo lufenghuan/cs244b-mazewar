@@ -317,7 +317,15 @@ __mws_process_pkt_nickname(mw_state_t *s, mw_pkt_nickname_t *pkt)
 void
 __mws_process_pkt_leaving(mw_state_t *s, mw_pkt_leaving_t *pkt)
 {
-	/* TODO: Add implementation */
+	/* XXX: We drop received packets sent by this client, so this
+	 * should never trigger unless another client is reporting
+	 * this local rat as leaving (which shouldn't happen).
+	 */
+	ASSERT(s->mws_local_rat_id != pkt->mwpl_leaving_guid);
+
+	mw_rat_t *r = __mws_get_rat(s, pkt->mwpl_leaving_guid);
+	if (r != NULL) /* XXX: No rat for this guid? */
+		mwr_dest(r);
 }
 
 void
