@@ -236,6 +236,20 @@ mwr_set_name(mw_rat_t *r, const char *name)
 }
 
 int
+mwr_get_xpos(mw_rat_t *r, mw_pos_t *x)
+{
+	*x = r->mwr_x_pos;
+	return 0;
+}
+
+int
+mwr_get_ypos(mw_rat_t *r, mw_pos_t *y)
+{
+	*y = r->mwr_y_pos;
+	return 0;
+}
+
+int
 mwr_get_score(mw_rat_t *r, mw_score_t *score)
 {
 	*score = r->mwr_score;
@@ -274,6 +288,15 @@ __mwr_ypos_plus_dir(mw_pos_t *ynew, mw_pos_t yold, mw_dir_t dir)
 		*ynew = yold;
 		break;
 	}
+}
+
+int
+mwr_is_occupying_cell(mw_rat_t *r, mw_pos_t x, mw_pos_t y)
+{
+	if (r->mwr_x_pos == x && r->mwr_y_pos == y)
+		return 1;
+
+	return 0;
 }
 
 int

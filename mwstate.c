@@ -188,10 +188,32 @@ mws_set_local_rat(mw_state_t *s, mw_guid_t id)
 }
 
 int
+__mwr_is_cell_occupied(mw_state_t *s, mw_pos_t x, mw_pos_t y)
+{
+	mw_rat_t *r;
+	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+		/* Skip the local rat when deciding if a cell is occupied. */
+		if (mwr_cmp_id(r, s->mws_local_rat_id) == 0)
+			continue;
+
+		if (mwr_is_occupying_cell(r, x, y))
+			return 1;
+	}
+
+	return 0;
+}
+
+int
 mws_set_rat_xpos(mw_state_t *s, mw_guid_t id, mw_pos_t x)
 {
+	mw_pos_t y;
+
 	mw_rat_t *r = __mws_get_rat(s, id);
 	if (r == NULL)
+		return -1;
+
+	mwr_get_ypos(r, &y);
+	if (__mwr_is_cell_occupied(s, x, y))
 		return -1;
 
 	return mwr_set_xpos(r, x);
@@ -200,8 +222,14 @@ mws_set_rat_xpos(mw_state_t *s, mw_guid_t id, mw_pos_t x)
 int
 mws_set_rat_ypos(mw_state_t *s, mw_guid_t id, mw_pos_t y)
 {
+	mw_pos_t x;
+
 	mw_rat_t *r = __mws_get_rat(s, id);
 	if (r == NULL)
+		return -1;
+
+	mwr_get_xpos(r, &x);
+	if (__mwr_is_cell_occupied(s, x, y))
 		return -1;
 
 	return mwr_set_ypos(r, y);

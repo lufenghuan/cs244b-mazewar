@@ -174,7 +174,7 @@ rightTurn(void)
 /* remember ... "North" is to the right ... positive X motion */
 
 void
-forward(void)
+_forward(void)
 {
 	register int	tx = MY_X_LOC;
 	register int	ty = MY_Y_LOC;
@@ -192,14 +192,9 @@ forward(void)
 		M->ylocIs(Loc(ty));
 		updateView = TRUE;
 	}
-
-	mws_set_rat_xpos(M->state, M->local_id, MY_X_LOC);
-	mws_set_rat_ypos(M->state, M->local_id, MY_Y_LOC);
 }
 
-/* ----------------------------------------------------------------------- */
-
-void backward()
+void _backward()
 {
 	register int	tx = MY_X_LOC;
 	register int	ty = MY_Y_LOC;
@@ -217,9 +212,60 @@ void backward()
 		M->ylocIs(Loc(ty));
 		updateView = TRUE;
 	}
+}
 
-	mws_set_rat_xpos(M->state, M->local_id, MY_X_LOC);
-	mws_set_rat_ypos(M->state, M->local_id, MY_Y_LOC);
+void
+forward(void)
+{
+	int rc;
+
+	_forward();
+
+	/* XXX: I am relying on the fact that only one (x or y) will
+	 * change at any given time. Thus, I don't try to "undo" the
+	 * setting of x when y fails. I just assume that x didn't
+	 * actually change.
+	 */
+	rc = mws_set_rat_xpos(M->state, M->local_id, MY_X_LOC);
+	if (rc != 0)
+		goto undo;
+
+	rc = mws_set_rat_ypos(M->state, M->local_id, MY_Y_LOC);
+	if (rc != 0)
+		goto undo;
+
+	return;
+
+undo:
+	_backward();
+}
+
+/* ----------------------------------------------------------------------- */
+
+void
+backward()
+{
+	int rc;
+
+	_backward();
+
+	/* XXX: I am relying on the fact that only one (x or y) will
+	 * change at any given time. Thus, I don't try to "undo" the
+	 * setting of x when y fails. I just assume that x didn't
+	 * actually change.
+	 */
+	rc = mws_set_rat_xpos(M->state, M->local_id, MY_X_LOC);
+	if (rc != 0)
+		goto undo;
+
+	rc = mws_set_rat_ypos(M->state, M->local_id, MY_Y_LOC);
+	if (rc != 0)
+		goto undo;
+
+	return;
+
+undo:
+	_forward();
 }
 
 /* ----------------------------------------------------------------------- */
