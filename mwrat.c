@@ -412,7 +412,6 @@ mwr_send_state_pkt(mw_rat_t *r)
 	pkt.mwps_header.mwph_guid       = r->mwr_id;
 	pkt.mwps_header.mwph_seqno      = r->mwr_pkt_seqno++;
 	pkt.mwps_score                  = r->mwr_score;
-	pkt.mwps_timestamp              = 0xABAD1DEA;
 	pkt.mwps_crt                    = mw_rand();
 
 	mw_posdir_pack(&pkt.mwps_rat_posdir, r->mwr_x_pos,

@@ -170,7 +170,6 @@ typedef struct mw_pkt_state {
 	uint32_t        mwps_missile_posdir;
 
 	uint32_t        mwps_score;
-	uint64_t        mwps_timestamp;
 	uint64_t        mwps_crt;
 } mw_pkt_state_t;
 

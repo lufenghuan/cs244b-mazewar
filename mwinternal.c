@@ -103,7 +103,6 @@ mw_print_pkt_state(const mw_pkt_state_t *pkt)
 	__PRINT(pkt->mwps_rat_posdir,     "0x%x",  "rat_posdir");
 	__PRINT(pkt->mwps_missile_posdir, "0x%x",  "missile_posdir");
 	__PRINT(pkt->mwps_score,          "0x%x",  "score");
-	__PRINT(pkt->mwps_timestamp,      "0x%lx", "timestamp");
 	__PRINT(pkt->mwps_crt,            "0x%lx", "crt");
 }
 
