@@ -13,8 +13,8 @@ static mw_missile_id_t mw_missile_count = 0;
 static void
 __mwm_init_timeout(struct timeval *timeout)
 {
-	timeout->tv_sec  = 1;
-	timeout->tv_usec = 0;
+	timeout->tv_sec  = 0;
+	timeout->tv_usec = 500000;
 }
 
 static void
