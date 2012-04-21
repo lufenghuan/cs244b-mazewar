@@ -131,6 +131,22 @@ mw_print_pkt_nickname(const mw_pkt_nickname_t *pkt)
 }
 
 void
+mw_print_pkt_leaving(const mw_pkt_leaving_t *pkt)
+{
+	unsigned int i;
+	char buf[16];
+
+	mw_print_pkt_header(&pkt->mwpl_header);
+
+	__PRINT(pkt->mwpl_leaving_guid, "0x%lx", "leaving_guid");
+
+	for (i = 0; i < sizeof(pkt->mwpl_mbz); i++) {
+		snprintf(buf, 16, "mbz[%i]", i);
+		__PRINT(pkt->mwpl_mbz[i], "0x%x", buf);
+	}
+}
+
+void
 mw_posdir_pack(uint32_t *posdir, mw_pos_t _x, mw_pos_t _y, mw_dir_t _dir)
 {
 	/* make local copies of position and direction with known sizes.

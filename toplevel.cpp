@@ -387,7 +387,7 @@ void shoot()
 
 void quit(int sig)
 {
-
+	mws_quit(M->state);
 	StopWindow();
 	exit(0);
 }

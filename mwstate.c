@@ -99,6 +99,18 @@ mws_fire_missile(mw_state_t *s, mw_guid_t id)
 }
 
 int
+mws_quit(mw_state_t *s)
+{
+	mw_rat_t *r, *n;
+	list_for_each_entry_safe(r, n, &s->mws_rats, mwr_list) {
+		mwr_dest(r);
+	}
+
+	s->mws_local_rat_id = -1;
+	return 0;
+}
+
+int
 mws_add_rat(mw_state_t *s, mw_guid_t *id,
             mw_pos_t x, mw_pos_t y, mw_dir_t dir,
             const char *name)
@@ -293,7 +305,8 @@ __mws_process_pkt_state(mw_state_t *s, mw_pkt_state_t *pkt)
 	/* TODO: Still need to account for CRT */
 }
 
-void __mws_process_pkt_nickname(mw_state_t *s, mw_pkt_nickname_t *pkt)
+void
+__mws_process_pkt_nickname(mw_state_t *s, mw_pkt_nickname_t *pkt)
 {
 	mw_rat_t *r = __mws_get_rat(s, pkt->mwpn_header.mwph_guid);
 
@@ -302,9 +315,15 @@ void __mws_process_pkt_nickname(mw_state_t *s, mw_pkt_nickname_t *pkt)
 }
 
 void
+__mws_process_pkt_leaving(mw_state_t *s, mw_pkt_leaving_t *pkt)
+{
+	/* TODO: Add implementation */
+}
+
+void
 mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt)
 {
-	/* TODO: Must swap pkt before processing it */
+	/* TODO: Must swab pkt before processing it */
 
 	if (s->mws_local_rat_id == pkt->mwph_guid)
 		return; /* Ignore our own local rat's packets */
@@ -315,6 +334,9 @@ mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt)
 		break;
 	case MW_PKT_HDR_DESCRIPTOR_NICKNAME:
 		__mws_process_pkt_nickname(s, (mw_pkt_nickname_t *)pkt);
+		break;
+	case MW_PKT_HDR_DESCRIPTOR_LEAVING:
+		__mws_process_pkt_leaving(s, (mw_pkt_leaving_t *)pkt);
 		break;
 	default:
 		/* A packet was received with an unknown descriptor

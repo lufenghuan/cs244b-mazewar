@@ -54,6 +54,7 @@ int mws_set_rat_ypos(mw_state_t *s, mw_guid_t id, mw_pos_t y);
 int mws_set_rat_dir(mw_state_t *s, mw_guid_t id, mw_dir_t dir);
 int mws_get_rat_score(mw_state_t *s, mw_guid_t id, mw_score_t *score);
 int mws_fire_missile(mw_state_t *s, mw_guid_t id);
+int mws_quit(mw_state_t *s);
 
 void mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt);
 

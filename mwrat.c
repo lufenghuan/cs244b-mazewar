@@ -77,10 +77,14 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 int
 mwr_dest(mw_rat_t *r)
 {
-	ASSERT(list_empty(&r->mwr_list));
+	/* If it is on a list, remove it from the list */
+	if (!list_empty(&r->mwr_list))
+		list_del(&r->mwr_list);
 
 	if (r->mwr_name != NULL)
 		free(r->mwr_name);
+
+	mwr_send_leaving_pkt(r);
 
 	free(r);
 	return 0;
@@ -466,8 +470,8 @@ mwr_send_state_pkt(mw_rat_t *r)
 	 */
 	__mwr_init_state_pkt_timeout(&r->mwr_state_pkt_timeout);
 
-	/* TODO: Must swap pkt before sending it on the wire */
-	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_state), 0,
+	/* TODO: Must swab pkt before sending it on the wire */
+	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_state_t), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 }
 
@@ -493,7 +497,33 @@ mwr_send_name_pkt(mw_rat_t *r)
 
 	memset(pkt.mwpn_mbz, 0, sizeof(pkt.mwpn_mbz));
 
-	/* TODO: Must swap pkt before sending it on the wire */
-	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_state), 0,
+	/* TODO: Must swab pkt before sending it on the wire */
+	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_nickname_t), 0,
+	              r->mwr_mcast_addr, sizeof(struct sockaddr));
+}
+
+int
+mwr_send_leaving_pkt(mw_rat_t *r)
+{
+	mw_pkt_leaving_t pkt;
+
+	if (!r->mwr_is_local)
+		return 0;
+
+	ASSERT(r->mwr_mcast_addr != NULL);
+
+	pkt.mwpl_header.mwph_descriptor = MW_PKT_HDR_DESCRIPTOR_LEAVING;
+	pkt.mwpl_header.mwph_mbz[0]     = 0;
+	pkt.mwpl_header.mwph_mbz[1]     = 0;
+	pkt.mwpl_header.mwph_mbz[2]     = 0;
+	pkt.mwpl_header.mwph_guid       = r->mwr_id;
+	pkt.mwpl_header.mwph_seqno      = r->mwr_pkt_seqno++;
+
+	pkt.mwpl_leaving_guid           = r->mwr_id;
+
+	memset(pkt.mwpl_mbz, 0, sizeof(pkt.mwpl_mbz));
+
+	/* TODO: Must swab pkt before sending it on the wire */
+	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_leaving_t), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 }
