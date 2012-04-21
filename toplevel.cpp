@@ -49,18 +49,6 @@ int main(int argc, char *argv[])
 	                      M->myName_);
 	mws_set_local_rat(M->state, M->local_id);
 
-	/* XXX: This is called in MazeInit, is it needed here too?
-	 *      Disabling until further understood why it's here.
-     NewPosition(M);
-	 */
-
- 	/* So you can see what a Rat is supposed to look like, we create
- 	   one rat at the following location: (1,5)
- 	   It doesn't move, you can't shoot it, you can just walk around it */
-	/* XXX: This appears to be for demonstration purposes only. As such,
-	 * it should be removed as the game's implementation progresses */
-        SetRatPosition(1, x, y, dir);
-
 	play();
 
 	return (0);

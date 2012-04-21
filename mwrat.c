@@ -28,6 +28,7 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
          mw_pos_t x, mw_pos_t y, mw_dir_t dir,
          const char *name)
 {
+	static int mazewar_index = 0;
 	mw_rat_t *tmp;
 
 	tmp = (mw_rat_t *)malloc(sizeof(mw_rat_t));
@@ -36,10 +37,11 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 
 	INIT_LIST_HEAD(&tmp->mwr_list);
 	/* XXX: Not thread safe. Accessing Global */
-	tmp->mwr_id    = mw_rand();
-	tmp->mwr_x_pos = tmp->mwr_x_wipe = x;
-	tmp->mwr_y_pos = tmp->mwr_y_wipe = y;
-	tmp->mwr_dir   = dir;
+	tmp->mwr_id       = mw_rand();
+	tmp->mwr_mw_index = mazewar_index++;
+	tmp->mwr_x_pos    = tmp->mwr_x_wipe = x;
+	tmp->mwr_y_pos    = tmp->mwr_y_wipe = y;
+	tmp->mwr_dir      = dir;
 
 	tmp->mwr_name  = strdup(name);
 	if (tmp->mwr_name == NULL) {
@@ -121,6 +123,10 @@ mwr_set_xpos(mw_rat_t *r, mw_pos_t x)
 	r->mwr_x_wipe = r->mwr_x_pos;
 	r->mwr_x_pos  = x;
 	mwr_send_state_pkt(r);
+
+	SetRatPosition(r->mwr_mw_index, Loc(r->mwr_x_pos),
+	               Loc(r->mwr_y_pos), Direction(r->mwr_dir));
+
 	return 0;
 }
 

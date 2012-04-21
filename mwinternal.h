@@ -84,6 +84,7 @@ typedef struct mw_rat {
 	struct list_head  mwr_list;
 
 	mw_guid_t         mwr_id;
+	int               mwr_mw_index;
 	mw_pos_t          mwr_x_pos;
 	mw_pos_t          mwr_y_pos;
 	mw_dir_t          mwr_dir;
