@@ -9,6 +9,12 @@
 
 #include <string.h>
 
+/* The Mazewar Protocol Spec states that in the event that a rat
+ * does not have an outstanding missile, the 32-bit missile posdir
+ * word will be 0xffffffff.
+ */
+#define NULL_MISSILE_POSDIR 0xffffffff
+
 static void
 __mwr_init_state_pkt_timeout(struct timeval *timeout)
 {
@@ -151,6 +157,58 @@ mwr_set_dir(mw_rat_t *r, mw_dir_t dir)
 }
 
 int
+mwr_set_missile_packed_posdir(mw_rat_t *r, uint32_t posdir)
+{
+	mw_pos_t x, y;
+	mw_dir_t dir;
+	int rc;
+
+	if (posdir == NULL_MISSILE_POSDIR) {
+		mwr_rm_missile(r);
+		return 0;
+	}
+
+	mw_posdir_unpack(posdir, &x, &y, &dir);
+	if (r->mwr_missile == NULL) {
+		rc = mwm_cons(&r->mwr_missile, NULL, x, y, dir);
+		if (rc)
+			return rc;
+	} else {
+		mwm_set_xpos(r->mwr_missile, x);
+		mwm_set_ypos(r->mwr_missile, y);
+		mwm_set_dir(r->mwr_missile, dir);
+	}
+
+	return 0;
+}
+
+int
+mwr_set_score(mw_rat_t *r, mw_score_t score)
+{
+	r->mwr_score = score;
+	mwr_send_state_pkt(r);
+	return 0;
+}
+
+int
+mwr_rm_missile(mw_rat_t *r)
+{
+	if (r->mwr_missile == NULL)
+		return 1;
+
+	/* XXX: This is a bit of a hack, but the
+	 *      missile's position needs to be wiped
+	 *      first.
+	 */
+	mwm_render_wipe(r->mwr_missile);
+
+	mwm_dest(r->mwr_missile);
+	r->mwr_missile = NULL;
+	mwr_send_state_pkt(r);
+	return 0;
+}
+
+int
 mwr_set_send_pkts_flag(mw_rat_t *r, int send_pkts)
 {
 	r->mwr_send_pkts = send_pkts;
@@ -262,15 +320,7 @@ __mwr_update_missile(mw_rat_t *r, int **maze)
 	/* 1 == wall at position x, y */
 	if (maze[xafter][yafter] == 1) {
 		/* Missile hit a wall, time to destroy it */
-
-		/* XXX: This is a bit of a hack, but the
-		 *      missile's position needs to be wiped
-		 *      first.
-		 */
-		mwm_render_wipe(m);
-
-		mwm_dest(m);
-		r->mwr_missile = m = NULL;
+		mwr_rm_missile(r);
 	}
 
 	/* A state packet must be sent on every state change, including
@@ -366,7 +416,7 @@ mwr_send_state_pkt(mw_rat_t *r)
 	                                     r->mwr_y_pos, r->mwr_dir);
 
 	if (r->mwr_missile == NULL)
-		pkt.mwps_missile_posdir = 0xffffffff;
+		pkt.mwps_missile_posdir = NULL_MISSILE_POSDIR;
 	else
 		mwm_get_packed_posdir(r->mwr_missile,
 		                      &pkt.mwps_missile_posdir);

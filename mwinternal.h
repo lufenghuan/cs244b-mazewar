@@ -77,9 +77,12 @@ int  mwm_dest(mw_missile_t *m);
 void mwm_render_wipe(const mw_missile_t *m);
 void mwm_render_draw(const mw_missile_t *m);
 void mwm_update(mw_missile_t *m);
-void  mwm_get_xpos(mw_missile_t *m, mw_pos_t *xpos);
-void  mwm_get_ypos(mw_missile_t *m, mw_pos_t *ypos);
-void  mwm_get_packed_posdir(mw_missile_t *m, uint32_t *posdir);
+int  mwm_set_xpos(mw_missile_t *m, mw_pos_t x);
+int  mwm_set_ypos(mw_missile_t *m, mw_pos_t y);
+int  mwm_set_dir(mw_missile_t *m, mw_dir_t dir);
+void mwm_get_xpos(mw_missile_t *m, mw_pos_t *x);
+void mwm_get_ypos(mw_missile_t *m, mw_pos_t *y);
+void mwm_get_packed_posdir(mw_missile_t *m, uint32_t *posdir);
 
 typedef struct mw_rat {
 	struct list_head  mwr_list;
@@ -126,6 +129,9 @@ int  mwr_cmp_id(mw_rat_t *r, mw_guid_t id);
 int  mwr_set_xpos(mw_rat_t *r, mw_pos_t x);
 int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
+int  mwr_set_missile_packed_posdir(mw_rat_t *r, uint32_t posdir);
+int  mwr_set_score(mw_rat_t *r, mw_score_t score);
+int  mwr_rm_missile(mw_rat_t *r);
 int  mwr_set_send_pkts_flag(mw_rat_t *r, int send_pkts);
 int  mwr_set_id(mw_rat_t *r, mw_guid_t guid);
 int  mwr_get_score(mw_rat_t *r, mw_score_t *score);

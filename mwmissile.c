@@ -126,16 +126,45 @@ mwm_update(mw_missile_t *m)
 		__mwm_update_position(m);
 }
 
-void
-mwm_get_xpos(mw_missile_t *m, mw_pos_t *xpos)
+int
+mwm_set_xpos(mw_missile_t *m, mw_pos_t x)
 {
-	*xpos = m->mwm_x_pos;
+	/* XXX: A bit of a hack, but it works */
+	mwm_render_wipe(m);
+
+	m->mwm_x_wipe = m->mwm_x_pos;
+	m->mwm_x_pos = x;
+	return 0;
+}
+
+int
+mwm_set_ypos(mw_missile_t *m, mw_pos_t y)
+{
+	/* XXX: A bit of a hack, but it works */
+	mwm_render_wipe(m);
+
+	m->mwm_y_wipe = m->mwm_y_pos;
+	m->mwm_y_pos = y;
+	return 0;
+}
+
+int
+mwm_set_dir(mw_missile_t *m, mw_dir_t dir)
+{
+	m->mwm_dir = dir;
+	return 0;
 }
 
 void
-mwm_get_ypos(mw_missile_t *m, mw_pos_t *ypos)
+mwm_get_xpos(mw_missile_t *m, mw_pos_t *x)
 {
-	*ypos = m->mwm_y_pos;
+	*x = m->mwm_x_pos;
+}
+
+void
+mwm_get_ypos(mw_missile_t *m, mw_pos_t *y)
+{
+	*y = m->mwm_y_pos;
 }
 
 void

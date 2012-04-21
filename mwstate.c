@@ -256,10 +256,13 @@ __mws_process_pkt_state(mw_state_t *s, mw_pkt_state_t *pkt)
 		return;
 	}
 
-	/* TODO: Still need to update score, missile, etc. */
 	mwr_set_xpos(r, x);
 	mwr_set_ypos(r, y);
 	mwr_set_dir(r, dir);
+	mwr_set_score(r, pkt->mwps_score);
+	mwr_set_missile_packed_posdir(r, pkt->mwps_missile_posdir);
+
+	/* TODO: Still need to account for CRT */
 }
 
 void __mws_process_pkt_nickname(mw_state_t *s, mw_pkt_nickname_t *pkt)
