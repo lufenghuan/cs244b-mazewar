@@ -184,7 +184,7 @@ mws_set_local_rat(mw_state_t *s, mw_guid_t id)
 	if (r == NULL)
 		return -1;
 
-	return mwr_set_send_pkts_flag(r, 1);
+	return mwr_set_is_local_flag(r, 1);
 }
 
 int

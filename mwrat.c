@@ -65,7 +65,7 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 	__mwr_init_name_pkt_timeout(&tmp->mwr_name_pkt_timeout);
 	gettimeofday(&tmp->mwr_lasttime, NULL);
 
-	tmp->mwr_send_pkts = 0;
+	tmp->mwr_is_local = 0;
 
 	if (id != NULL)
 		*id = tmp->mwr_id;
@@ -209,9 +209,9 @@ mwr_rm_missile(mw_rat_t *r)
 }
 
 int
-mwr_set_send_pkts_flag(mw_rat_t *r, int send_pkts)
+mwr_set_is_local_flag(mw_rat_t *r, int is_local)
 {
-	r->mwr_send_pkts = send_pkts;
+	r->mwr_is_local = is_local;
 	return 0;
 }
 
@@ -374,6 +374,9 @@ __mwr_name_pkt_timeout_triggered(mw_rat_t *r)
 void
 mwr_update(mw_rat_t *r, int **maze)
 {
+	if (!r->mwr_is_local)
+		return;
+
 	__mwr_update_missile(r, maze);
 	__mwr_update_timeouts(r);
 
@@ -396,7 +399,7 @@ mwr_send_state_pkt(mw_rat_t *r)
 {
 	mw_pkt_state_t pkt;
 
-	if (!r->mwr_send_pkts)
+	if (!r->mwr_is_local)
 		return 0;
 
 	ASSERT(r->mwr_mcast_addr != NULL);
@@ -436,7 +439,7 @@ mwr_send_name_pkt(mw_rat_t *r)
 {
 	mw_pkt_nickname_t pkt;
 
-	if (!r->mwr_send_pkts)
+	if (!r->mwr_is_local)
 		return 0;
 
 	ASSERT(r->mwr_mcast_addr != NULL);
