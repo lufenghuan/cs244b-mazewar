@@ -223,6 +223,19 @@ mwr_set_id(mw_rat_t *r, mw_guid_t id)
 }
 
 int
+mwr_set_name(mw_rat_t *r, const char *name)
+{
+	if (r->mwr_name != NULL)
+		free(r->mwr_name);
+
+	r->mwr_name  = strdup(name);
+	if (r->mwr_name == NULL)
+		return -1;
+
+	return 0;
+}
+
+int
 mwr_get_score(mw_rat_t *r, mw_score_t *score)
 {
 	*score = r->mwr_score;

@@ -267,7 +267,10 @@ __mws_process_pkt_state(mw_state_t *s, mw_pkt_state_t *pkt)
 
 void __mws_process_pkt_nickname(mw_state_t *s, mw_pkt_nickname_t *pkt)
 {
-	/* TODO: Add Implementation. */
+	mw_rat_t *r = __mws_get_rat(s, pkt->mwpn_header.mwph_guid);
+
+	if (r != NULL) /* XXX: No rat for this guid? */
+		mwr_set_name(r, (char *)pkt->mwpn_nickname);
 }
 
 void
