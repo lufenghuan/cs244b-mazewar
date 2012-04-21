@@ -358,13 +358,18 @@ mwr_send_state_pkt(mw_rat_t *r)
 	pkt.mwps_header.mwph_mbz[2]     = 0;
 	pkt.mwps_header.mwph_guid       = r->mwr_id;
 	pkt.mwps_header.mwph_seqno      = r->mwr_pkt_seqno++;
-	pkt.mwps_missile_posdir         = 0xABAD1DEA;
-	pkt.mwps_score                  = 0xABAD1DEA;
+	pkt.mwps_score                  = r->mwr_score;
 	pkt.mwps_timestamp              = 0xABAD1DEA;
 	pkt.mwps_crt                    = mw_rand();
 
 	mw_posdir_pack(&pkt.mwps_rat_posdir, r->mwr_x_pos,
 	                                     r->mwr_y_pos, r->mwr_dir);
+
+	if (r->mwr_missile == NULL)
+		pkt.mwps_missile_posdir = 0xffffffff;
+	else
+		mwm_get_packed_posdir(r->mwr_missile,
+		                      &pkt.mwps_missile_posdir);
 
 	/* The timeout can be re-initialized because a state packet is
 	 * being transmitted. Keeps the caller from having to do this.

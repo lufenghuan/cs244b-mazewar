@@ -138,4 +138,10 @@ mwm_get_ypos(mw_missile_t *m, mw_pos_t *ypos)
 	*ypos = m->mwm_y_pos;
 }
 
+void
+mwm_get_packed_posdir(mw_missile_t *m, uint32_t *posdir)
+{
+	mw_posdir_pack(posdir, m->mwm_x_pos, m->mwm_y_pos, m->mwm_dir);
+}
+
 /* vim: set tabstop=8 shiftwidth=8 noexpandtab: */

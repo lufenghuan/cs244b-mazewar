@@ -79,6 +79,7 @@ void mwm_render_draw(const mw_missile_t *m);
 void mwm_update(mw_missile_t *m);
 void  mwm_get_xpos(mw_missile_t *m, mw_pos_t *xpos);
 void  mwm_get_ypos(mw_missile_t *m, mw_pos_t *ypos);
+void  mwm_get_packed_posdir(mw_missile_t *m, uint32_t *posdir);
 
 typedef struct mw_rat {
 	struct list_head  mwr_list;
