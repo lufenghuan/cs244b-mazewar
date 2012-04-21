@@ -98,12 +98,20 @@ mw_print_pkt_header(const mw_pkt_header_t *pkt)
 void
 mw_print_pkt_state(const mw_pkt_state_t *pkt)
 {
+	unsigned int i;
+	char buf[16];
+
 	mw_print_pkt_header(&pkt->mwps_header);
 
 	__PRINT(pkt->mwps_rat_posdir,     "0x%x",  "rat_posdir");
 	__PRINT(pkt->mwps_missile_posdir, "0x%x",  "missile_posdir");
 	__PRINT(pkt->mwps_score,          "0x%x",  "score");
 	__PRINT(pkt->mwps_crt,            "0x%lx", "crt");
+
+	for (i = 0; i < sizeof(pkt->mwps_mbz); i++) {
+		snprintf(buf, 16, "mbz[%i]", i);
+		__PRINT(pkt->mwps_mbz[i], "0x%x", buf);
+	}
 }
 
 void

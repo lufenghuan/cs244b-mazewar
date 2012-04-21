@@ -423,6 +423,8 @@ mwr_send_state_pkt(mw_rat_t *r)
 		mwm_get_packed_posdir(r->mwr_missile,
 		                      &pkt.mwps_missile_posdir);
 
+	memset(pkt.mwps_mbz, 0, sizeof(pkt.mwps_mbz));
+
 	/* The timeout can be re-initialized because a state packet is
 	 * being transmitted. Keeps the caller from having to do this.
 	 */

@@ -171,6 +171,9 @@ typedef struct mw_pkt_state {
 
 	uint32_t        mwps_score;
 	uint64_t        mwps_crt;
+
+	/* Pad to total size of 64-bytes */
+	uint8_t        mwps_mbz[24];
 } mw_pkt_state_t;
 
 #define MW_NICKNAME_LEN 32
