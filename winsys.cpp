@@ -755,7 +755,7 @@ DisplayRatBitmap(int screenX, int screenY, int width, int height, int srcX, int 
  */
 
 void
-WriteScoreString(RatIndexType rat)
+WriteScoreStringWithName(RatIndexType rat, const char *name)
 {
 	char buf[64];
 	int	leftEdge;
@@ -775,7 +775,7 @@ WriteScoreString(RatIndexType rat)
 			 rat.value() * (scoreFontInfo->max_bounds.ascent +
 				scoreFontInfo->max_bounds.descent) +
 			 scoreFontInfo->max_bounds.ascent,
-			 GetRatName(rat), strlen(GetRatName(rat)));
+			 name, strlen(name));
 	leftEdge = SCORE_X_DIM - XTextWidth(scoreFontInfo, buf, strlen(buf));
 	XDrawImageString(dpy, mwWindow, copyGC, leftEdge+SCORE_X_ORIGIN,
 			 SCORE_Y_ORIGIN +
@@ -783,6 +783,12 @@ WriteScoreString(RatIndexType rat)
 				scoreFontInfo->max_bounds.descent) +
 			 scoreFontInfo->max_bounds.ascent,
 			 buf, strlen(buf));
+}
+
+void
+WriteScoreString(RatIndexType rat)
+{
+	WriteScoreStringWithName(rat, GetRatName(rat));
 }
 
 /* ----------------------------------------------------------------------- */

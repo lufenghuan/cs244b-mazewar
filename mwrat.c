@@ -104,6 +104,9 @@ mwr_render_draw(const mw_rat_t *r)
 	/* Draw rat's arrow in top down view */
 	HackMazeBitmap(Loc(r->mwr_x_pos), Loc(r->mwr_y_pos),
 	               &normalArrows[r->mwr_dir]);
+
+	/* Draw rat's score and name on the scorecard */
+	UpdateScoreCardWithName(r->mwr_mw_index, r->mwr_name);
 }
 
 int
