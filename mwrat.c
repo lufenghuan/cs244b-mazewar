@@ -442,10 +442,34 @@ mwr_tagged_by(mw_rat_t *r, mw_guid_t tagger_id)
 int
 mwr_tagged(mw_rat_t *r, mw_guid_t taggee_id)
 {
-	/* This is a no-op. According to the Mazewar Protocol, tagged
-	 * rats report that they have been tagged. The tagger rat just
-	 * waits for the tagged packet to arrive and determines it
-	 * tagged another rat through that mechanism. */
+	mw_pos_t x, y;
+
+	if (!r->mwr_is_local)
+		return -1;
+
+	mwr_increment_score(r, 11);
+
+	/* XXX: This assumes the missile that made the tag hasn't
+	 * already been destroyed. For example, if there is much time
+	 * between the tagged event, it's possible that this is an
+	 * entirely new missile. If this is the case, we should not
+	 * be destroying. We assume that chances are this is the same
+	 * missile that made the tag; thus, destroy it.
+	 */
+	if (r->mwr_missile != NULL) {
+		/* XXX: Super Hack! We need to clear the cell which the
+		 * missile was occupying, otherwise the missile will
+		 * continue to be rendered. We can't do this in
+		 * mwr_rm_missile because that can cause a wall to be
+		 * cleared out.
+		 */
+		mwm_get_xpos(r->mwr_missile, &x);
+		mwm_get_ypos(r->mwr_missile, &y);
+		HackMazeBitmap(Loc(x), Loc(y), &empty);
+
+		mwr_rm_missile(r);
+	}
+
 	return 0;
 }
 

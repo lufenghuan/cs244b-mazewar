@@ -195,10 +195,8 @@ __mws_check_for_tagging(mw_state_t *s)
 			mwr_get_xpos(each, &x);
 			mwr_get_ypos(each, &y);
 
-			if (mwr_missile_is_occupying_cell(r, x, y)) {
+			if (mwr_missile_is_occupying_cell(r, x, y))
 				mwr_tagged_by(each, tagger_id);
-				mwr_tagged(r, taggee_id);
-			}
 		}
 	}
 }
@@ -374,7 +372,15 @@ __mws_process_pkt_leaving(mw_state_t *s, mw_pkt_leaving_t *pkt)
 void
 __mws_process_pkt_tagged(mw_state_t *s, mw_pkt_tagged_t *pkt)
 {
-	/* TODO: Add implementation */
+	/* My local rat wasn't the shooter in this tagged event, so
+	 * ignore this packet.
+	 */
+	if (s->mws_local_rat_id != pkt->mwpt_shooter_guid)
+		return;
+
+	mw_rat_t *r = __mws_get_rat(s, pkt->mwpt_shooter_guid);
+	if (r != NULL) /* XXX: No rat for this guid? */
+		mwr_tagged(r, pkt->mwpt_header.mwph_guid);
 }
 
 void
