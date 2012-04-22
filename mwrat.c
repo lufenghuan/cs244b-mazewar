@@ -195,6 +195,10 @@ mwr_set_ypos(mw_rat_t *r, mw_pos_t y)
 	r->mwr_y_wipe = r->mwr_y_pos;
 	r->mwr_y_pos  = y;
 	mwr_send_state_pkt(r);
+
+	SetRatPosition(r->mwr_mw_index, Loc(r->mwr_x_pos),
+	               Loc(r->mwr_y_pos), Direction(r->mwr_dir));
+
 	return 0;
 }
 
@@ -203,6 +207,10 @@ mwr_set_dir(mw_rat_t *r, mw_dir_t dir)
 {
 	r->mwr_dir = dir;
 	mwr_send_state_pkt(r);
+
+	SetRatPosition(r->mwr_mw_index, Loc(r->mwr_x_pos),
+	               Loc(r->mwr_y_pos), Direction(r->mwr_dir));
+
 	return 0;
 }
 
