@@ -7,15 +7,32 @@
 #define SECS_IN_PHASE_DISCOVERY 5
 #define DEFAULT_RAT_NAME "unknown"
 
+typedef struct mw_rat_list_ent {
+	struct list_head  mwrle_list;
+	mw_rat_t         *mwrle_rat;
+} mw_rat_list_ent_t;
+
+static mw_rat_list_ent_t *
+__mws_get_rat_list_ent(mw_state_t *s, mw_guid_t id)
+{
+	/* XXX: Yes, this is bad, and slow, and ugly; but it's simple. */
+	mw_rat_list_ent_t *e;
+	list_for_each_entry(e, &s->mws_rat_list, mwrle_list) {
+		if (mwr_cmp_id(e->mwrle_rat, id) == 0)
+			return e;
+	}
+
+	return NULL;
+}
+
 static mw_rat_t *
 __mws_get_rat(mw_state_t *s, mw_guid_t id)
 {
-	/* XXX: Yes, this is bad, and slow, and ugly; but it's simple. */
-	mw_rat_t *r;
-	list_for_each_entry(r, &s->mws_rat_list, mwr_list) {
-		if (mwr_cmp_id(r, id) == 0)
-			return r;
-	}
+	mw_rat_list_ent_t *e;
+
+	e = __mws_get_rat_list_ent(s, id);
+	if (e != NULL)
+		return e->mwrle_rat;
 
 	return NULL;
 }
@@ -103,9 +120,11 @@ mws_fire_missile(mw_state_t *s, mw_guid_t id)
 int
 mws_quit(mw_state_t *s)
 {
-	mw_rat_t *r, *n;
-	list_for_each_entry_safe(r, n, &s->mws_rat_list, mwr_list) {
-		mwr_dest(r);
+	mw_rat_list_ent_t *e, *n;
+	list_for_each_entry_safe(e, n, &s->mws_rat_list, mwrle_list) {
+		list_del(&e->mwrle_list);
+		mwr_dest(e->mwrle_rat);
+		free(e);
 	}
 
 	s->mws_local_rat_id = -1;
@@ -117,46 +136,61 @@ mws_add_rat(mw_state_t *s, mw_guid_t *id,
             mw_pos_t x, mw_pos_t y, mw_dir_t dir,
             const char *name)
 {
+	mw_rat_list_ent_t *e;
 	mw_rat_t *r;
 	int rc;
 
+	e = (mw_rat_list_ent_t *)malloc(sizeof(mw_rat_list_ent_t));
+	if (e == NULL) {
+		rc = -ENOMEM;
+		goto ent_fail;
+	}
+
 	rc = mwr_cons(&r, id, x, y, dir, name);
+	if (rc)
+		goto err_rat;
+
 	mwr_set_addr(r, s->mws_mcast_addr, s->mws_mcast_socket);
 
-	if (rc)
-		return rc;
+	e->mwrle_rat = r;
+	list_add_tail(&e->mwrle_list, &s->mws_rat_list);
 
-	list_add_tail(&r->mwr_list, &s->mws_rat_list);
-	return 0;
+	return rc;
+
+err_rat:
+	free(e);
+
+ent_fail:
+	return rc;
 }
 
 void
 mws_render_wipe(const mw_state_t *s)
 {
-	mw_rat_t *r;
-	list_for_each_entry(r, &s->mws_rat_list, mwr_list) {
-		mwr_render_wipe(r);
+	mw_rat_list_ent_t *e;
+	list_for_each_entry(e, &s->mws_rat_list, mwrle_list) {
+		mwr_render_wipe(e->mwrle_rat);
 	}
 }
 
 void
 mws_render_draw(const mw_state_t *s)
 {
-	mw_rat_t *r;
-	list_for_each_entry(r, &s->mws_rat_list, mwr_list) {
-		mwr_render_draw(r);
+	mw_rat_list_ent_t *e;
+	list_for_each_entry(e, &s->mws_rat_list, mwrle_list) {
+		mwr_render_draw(e->mwrle_rat);
 	}
 }
 
 static void
 __mws_update_rats(mw_state_t *s)
 {
-	mw_rat_t *r;
+	mw_rat_list_ent_t *e;
 
 	ASSERT(s->mws_mcast_addr != NULL);
 
-	list_for_each_entry(r, &s->mws_rat_list, mwr_list) {
-		mwr_update(r, s->mws_maze);
+	list_for_each_entry(e, &s->mws_rat_list, mwrle_list) {
+		mwr_update(e->mwrle_rat, s->mws_maze);
 	}
 }
 
@@ -176,27 +210,27 @@ __mws_update_elapsedtime(mw_state_t *s)
 static void
 __mws_check_for_tagging(mw_state_t *s)
 {
-	mw_rat_t *r;
+	mw_rat_list_ent_t *e;
 
-	list_for_each_entry(r, &s->mws_rat_list, mwr_list) {
-		mw_guid_t  tagger_id;
-		mw_rat_t  *each;
+	list_for_each_entry(e, &s->mws_rat_list, mwrle_list) {
+		mw_guid_t         tagger_id;
+		mw_rat_list_ent_t *each;
 
-		mwr_get_id(r, &tagger_id);
+		mwr_get_id(e->mwrle_rat, &tagger_id);
 
-		list_for_each_entry(each, &s->mws_rat_list, mwr_list) {
+		list_for_each_entry(each, &s->mws_rat_list, mwrle_list) {
 			mw_guid_t taggee_id;
 			mw_pos_t  x, y;
 
-			if (each == r) /* Can't tag yourself */
+			if (each == e) /* Can't tag yourself */
 				continue;
 
-			mwr_get_id(each, &taggee_id);
-			mwr_get_xpos(each, &x);
-			mwr_get_ypos(each, &y);
+			mwr_get_id(each->mwrle_rat, &taggee_id);
+			mwr_get_xpos(each->mwrle_rat, &x);
+			mwr_get_ypos(each->mwrle_rat, &y);
 
-			if (mwr_missile_is_occupying_cell(r, x, y))
-				mwr_tagged_by(each, tagger_id);
+			if (mwr_missile_is_occupying_cell(e->mwrle_rat, x, y))
+				mwr_tagged_by(each->mwrle_rat, tagger_id);
 		}
 	}
 }
@@ -234,13 +268,13 @@ mws_set_local_rat(mw_state_t *s, mw_guid_t id)
 int
 __mwr_is_cell_occupied(mw_state_t *s, mw_pos_t x, mw_pos_t y)
 {
-	mw_rat_t *r;
-	list_for_each_entry(r, &s->mws_rat_list, mwr_list) {
+	mw_rat_list_ent_t *e;
+	list_for_each_entry(e, &s->mws_rat_list, mwrle_list) {
 		/* Skip the local rat when deciding if a cell is occupied. */
-		if (mwr_cmp_id(r, s->mws_local_rat_id) == 0)
+		if (mwr_cmp_id(e->mwrle_rat, s->mws_local_rat_id) == 0)
 			continue;
 
-		if (mwr_is_occupying_cell(r, x, y))
+		if (mwr_is_occupying_cell(e->mwrle_rat, x, y))
 			return 1;
 	}
 
@@ -364,9 +398,14 @@ __mws_process_pkt_leaving(mw_state_t *s, mw_pkt_leaving_t *pkt)
 	 */
 	ASSERT(s->mws_local_rat_id != pkt->mwpl_leaving_guid);
 
-	mw_rat_t *r = __mws_get_rat(s, pkt->mwpl_leaving_guid);
-	if (r != NULL) /* XXX: No rat for this guid? */
-		mwr_dest(r);
+	mw_rat_list_ent_t *e =
+	              __mws_get_rat_list_ent(s, pkt->mwpl_leaving_guid);
+
+	if (e != NULL) { /* XXX: No rat for this guid? */
+		list_del(&e->mwrle_list);
+		mwr_dest(e->mwrle_rat);
+		free(e);
+	}
 }
 
 void

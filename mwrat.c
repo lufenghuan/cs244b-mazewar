@@ -76,7 +76,6 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 	if (tmp == NULL)
 		return -ENOMEM;
 
-	INIT_LIST_HEAD(&tmp->mwr_list);
 	INIT_LIST_HEAD(&tmp->mwr_tagged_pkt_list);
 	INIT_LIST_HEAD(&tmp->mwr_acked_pkt_list);
 
@@ -132,10 +131,6 @@ int
 mwr_dest(mw_rat_t *r)
 {
 	int rc = 0;
-
-	/* If it is on a list, remove it from the list */
-	if (!list_empty(&r->mwr_list))
-		list_del(&r->mwr_list);
 
 	if (r->mwr_name != NULL)
 		free(r->mwr_name);
