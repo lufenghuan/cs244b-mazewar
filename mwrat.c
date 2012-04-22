@@ -161,7 +161,8 @@ mwr_render_draw(const mw_rat_t *r)
 	               &normalArrows[r->mwr_dir]);
 
 	/* Draw rat's score and name on the scorecard */
-	UpdateScoreCardWithName(r->mwr_mw_index, r->mwr_name);
+	UpdateScoreCardWithNameAndScore(r->mwr_mw_index,
+	                                r->mwr_name, r->mwr_score);
 }
 
 int

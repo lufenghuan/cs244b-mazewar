@@ -582,11 +582,12 @@ NewScoreCard()
 
 /* ----------------------------------------------------------------------- */
 void
-UpdateScoreCardWithName(RatIndexType ratIndex, const char *name)
+UpdateScoreCardWithNameAndScore(RatIndexType ratIndex,
+                                const char *name, int score)
 {
 	ClearScoreLine(ratIndex);
 	if (M->rat(ratIndex).playing)
-		WriteScoreStringWithName(ratIndex, name);
+		WriteScoreStringWithNameAndScore(ratIndex, name, score);
 	if (Rats2Display[ratIndex.value()].visible == TRUE)
 		InvertScoreLine(ratIndex);
 }

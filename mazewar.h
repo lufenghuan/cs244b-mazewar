@@ -324,7 +324,8 @@ void clearPosition(RatIndexType, Loc, Loc);
 void clearSquare(Loc xClear, Loc yClear);
 void NewScoreCard(void);
 void UpdateScoreCard(RatIndexType);
-void UpdateScoreCardWithName(RatIndexType, const char *name);
+void UpdateScoreCardWithNameAndScore(RatIndexType,
+                                     const char *name, int score);
 void FlipBitmaps(void);
 void bitFlip(BitCell *, int size);
 void SwapBitmaps(void);
@@ -385,7 +386,8 @@ void DeadRatCursor(void);
 void HackMazeBitmap(Loc, Loc, BitCell *);
 void DisplayRatBitmap(int, int, int, int, int, int);
 void WriteScoreString(RatIndexType);
-void WriteScoreStringWithName(RatIndexType, const char *name);
+void WriteScoreStringWithNameAndScore(RatIndexType,
+                                      const char *name, int score);
 void ClearScoreLine(RatIndexType);
 void InvertScoreLine(RatIndexType);
 void NotifyPlayer(void);

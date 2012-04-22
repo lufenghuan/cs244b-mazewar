@@ -755,12 +755,13 @@ DisplayRatBitmap(int screenX, int screenY, int width, int height, int srcX, int 
  */
 
 void
-WriteScoreStringWithName(RatIndexType rat, const char *name)
+WriteScoreStringWithNameAndScore(RatIndexType rat,
+                                 const char *name, int score)
 {
 	char buf[64];
 	int	leftEdge;
 
-	sprintf(buf, "%d", (unsigned int) GetRatScore(rat).value());
+	sprintf(buf, "%d", score);
 
 	XClearArea(dpy, mwWindow, SCORE_X_ORIGIN,
 		   SCORE_Y_ORIGIN +
@@ -788,7 +789,8 @@ WriteScoreStringWithName(RatIndexType rat, const char *name)
 void
 WriteScoreString(RatIndexType rat)
 {
-	WriteScoreStringWithName(rat, GetRatName(rat));
+	WriteScoreStringWithNameAndScore(rat, GetRatName(rat),
+	                                 GetRatScore(rat).value());
 }
 
 /* ----------------------------------------------------------------------- */
