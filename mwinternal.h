@@ -155,6 +155,7 @@ int  mwr_send_name_pkt(mw_rat_t *r);
 int  mwr_send_leaving_pkt(mw_rat_t *r);
 int  mwr_send_tagged_pkt(mw_rat_t *r, mw_guid_t shooter_id);
 int  mwr_send_ack_pkt(mw_rat_t *r, mw_guid_t ack_id, mw_seqno_t ack_seqno);
+int  mwr_process_ack_pkt(mw_rat_t *r, mw_seqno_t acked_seqno);
 
 #define MW_PKT_HDR_DESCRIPTOR_STATE    0
 #define MW_PKT_HDR_DESCRIPTOR_NICKNAME 1

@@ -387,7 +387,9 @@ __mws_process_pkt_tagged(mw_state_t *s, mw_pkt_tagged_t *pkt)
 void
 __mws_process_pkt_ack(mw_state_t *s, mw_pkt_ack_t *pkt)
 {
-	/* TODO: Add implementation */
+	mw_rat_t *r = __mws_get_rat(s, pkt->mwpa_guid);
+	if (r != NULL) /* XXX: No rat for this guid? */
+		mwr_process_ack_pkt(r, pkt->mwpa_seqno);
 }
 
 void

@@ -790,10 +790,6 @@ mwr_send_tagged_pkt(mw_rat_t *r, mw_guid_t shooter_id)
 
 	memset(pkt->mwpt_mbz, 0, sizeof(pkt->mwpt_mbz));
 
-	/* TODO: These messages must be acknowledged. If an ACK is not
-	 * received in a timely manner, they must to be retransmitted.
-	 */
-
 	/* TODO: Must swab pkt before sending it on the wire */
 	return sendto(r->mwr_mcast_socket, pkt, sizeof(mw_pkt_tagged_t), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
@@ -845,4 +841,36 @@ mwr_send_ack_pkt(mw_rat_t *r, mw_guid_t ack_id, mw_seqno_t ack_seqno)
 
 ent_fail:
 	return rc;
+}
+
+int
+mwr_process_ack_pkt(mw_rat_t *r, mw_seqno_t acked_seqno)
+{
+	/* Since the only ACK'ed packets stated by the Mazewar Protocol
+	 * Spec are tagged packets, it is assumed the acked_seqno is in
+	 * the mwr_tagged_pkt_list. If for some reason we receive an
+	 * ACK for a seqno we've already process, we simply drop the
+	 * current ACK.
+	 */
+	if (!list_empty(&r->mwr_tagged_pkt_list)) {
+		mw_tagged_pkt_list_ent *e, *n;
+		list_for_each_entry_safe(e, n, &r->mwr_tagged_pkt_list,
+		                         mwtple_list) {
+			if (acked_seqno ==
+			    e->mwtple_pkt->mwpt_header.mwph_seqno) {
+				/* We're receive an ACK for this seqno,
+				 * se we no longer need to retransmit
+				 * this packet. Thus, remove it from the
+				 * list.
+				 */
+				list_del(&e->mwtple_list);
+				free(e->mwtple_pkt);
+				free(e);
+				return 0;
+			}
+		}
+	}
+
+	/* Didn't find acked_seqno in the list */
+	return -1;
 }
