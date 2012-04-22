@@ -39,7 +39,7 @@ typedef struct mw_state {
 	struct sockaddr   *mws_mcast_addr;
 	int                mws_mcast_socket;
 
-	struct list_head   mws_rats;
+	struct list_head   mws_rat_list;
 	mw_guid_t          mws_local_rat_id;
 
 	mws_phase_t        mws_phase;

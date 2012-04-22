@@ -12,7 +12,7 @@ __mws_get_rat(mw_state_t *s, mw_guid_t id)
 {
 	/* XXX: Yes, this is bad, and slow, and ugly; but it's simple. */
 	mw_rat_t *r;
-	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+	list_for_each_entry(r, &s->mws_rat_list, mwr_list) {
 		if (mwr_cmp_id(r, id) == 0)
 			return r;
 	}
@@ -36,7 +36,7 @@ mws_cons(mw_state_t **s)
 	if (tmp == NULL)
 		return -ENOMEM;
 
-	INIT_LIST_HEAD(&tmp->mws_rats);
+	INIT_LIST_HEAD(&tmp->mws_rat_list);
 	tmp->mws_local_rat_id = -1;
 
 	tmp->mws_phase = MWS_PHASE_DISCOVERY;
@@ -60,7 +60,7 @@ mws_dest(mw_state_t *s)
 {
 	int i;
 
-	ASSERT(list_empty(&s->mws_rats));
+	ASSERT(list_empty(&s->mws_rat_list));
 
 	if (s->mws_maze != NULL) {
 		for (i = 0; i < s->mws_xmax; i++)
@@ -104,7 +104,7 @@ int
 mws_quit(mw_state_t *s)
 {
 	mw_rat_t *r, *n;
-	list_for_each_entry_safe(r, n, &s->mws_rats, mwr_list) {
+	list_for_each_entry_safe(r, n, &s->mws_rat_list, mwr_list) {
 		mwr_dest(r);
 	}
 
@@ -126,7 +126,7 @@ mws_add_rat(mw_state_t *s, mw_guid_t *id,
 	if (rc)
 		return rc;
 
-	list_add_tail(&r->mwr_list, &s->mws_rats);
+	list_add_tail(&r->mwr_list, &s->mws_rat_list);
 	return 0;
 }
 
@@ -134,7 +134,7 @@ void
 mws_render_wipe(const mw_state_t *s)
 {
 	mw_rat_t *r;
-	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+	list_for_each_entry(r, &s->mws_rat_list, mwr_list) {
 		mwr_render_wipe(r);
 	}
 }
@@ -143,7 +143,7 @@ void
 mws_render_draw(const mw_state_t *s)
 {
 	mw_rat_t *r;
-	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+	list_for_each_entry(r, &s->mws_rat_list, mwr_list) {
 		mwr_render_draw(r);
 	}
 }
@@ -155,7 +155,7 @@ __mws_update_rats(mw_state_t *s)
 
 	ASSERT(s->mws_mcast_addr != NULL);
 
-	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+	list_for_each_entry(r, &s->mws_rat_list, mwr_list) {
 		mwr_update(r, s->mws_maze);
 	}
 }
@@ -178,13 +178,13 @@ __mws_check_for_tagging(mw_state_t *s)
 {
 	mw_rat_t *r;
 
-	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+	list_for_each_entry(r, &s->mws_rat_list, mwr_list) {
 		mw_guid_t  tagger_id;
 		mw_rat_t  *each;
 
 		mwr_get_id(r, &tagger_id);
 
-		list_for_each_entry(each, &s->mws_rats, mwr_list) {
+		list_for_each_entry(each, &s->mws_rat_list, mwr_list) {
 			mw_guid_t taggee_id;
 			mw_pos_t  x, y;
 
@@ -235,7 +235,7 @@ int
 __mwr_is_cell_occupied(mw_state_t *s, mw_pos_t x, mw_pos_t y)
 {
 	mw_rat_t *r;
-	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+	list_for_each_entry(r, &s->mws_rat_list, mwr_list) {
 		/* Skip the local rat when deciding if a cell is occupied. */
 		if (mwr_cmp_id(r, s->mws_local_rat_id) == 0)
 			continue;
