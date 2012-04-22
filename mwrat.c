@@ -15,9 +15,15 @@
  */
 #define NULL_MISSILE_POSDIR 0xffffffff
 
+typedef struct mw_tagged_pkt_list_ent {
+	struct list_head  mwtple_list;
+	mw_pkt_tagged_t  *mwtple_pkt;
+	struct timeval    mwtple_timeout;
+} mw_tagged_pkt_list_ent_t;
+
 typedef struct mw_index_hole {
-	list_head    mwih_list;
-	unsigned int mwih_index;
+	struct list_head mwih_list;
+	unsigned int     mwih_index;
 } mw_index_hole_t;
 
 static unsigned int mw_index = 0;
@@ -46,6 +52,13 @@ __mwr_init_name_pkt_timeout(struct timeval *timeout)
 	timeout->tv_usec = 0;
 }
 
+static void
+__mwr_init_tagged_pkt_timeout(struct timeval *timeout)
+{
+	timeout->tv_sec  = 0;
+	timeout->tv_usec = 500000;
+}
+
 int
 mwr_cons(mw_rat_t **r, mw_guid_t *id,
          mw_pos_t x, mw_pos_t y, mw_dir_t dir,
@@ -59,6 +72,8 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 		return -ENOMEM;
 
 	INIT_LIST_HEAD(&tmp->mwr_list);
+	INIT_LIST_HEAD(&tmp->mwr_tagged_pkt_list);
+
 	/* XXX: Not thread safe. Accessing Global */
 	tmp->mwr_id       = mw_rand();
 	tmp->mwr_x_pos    = tmp->mwr_x_wipe = x;
@@ -130,6 +145,18 @@ mwr_dest(mw_rat_t *r)
 		list_add_tail(&h->mwih_list, &mw_index_holes);
 		h->mwih_index = r->mwr_mw_index;
 	}
+
+	if (!list_empty(&r->mwr_tagged_pkt_list)) {
+		mw_tagged_pkt_list_ent *e, *n;
+		list_for_each_entry_safe(e, n, &r->mwr_tagged_pkt_list,
+		                         mwtple_list) {
+			list_del(&e->mwtple_list);
+			free(e->mwtple_pkt);
+			free(e);
+		}
+	}
+
+	ASSERT(list_empty(&r->mwr_tagged_pkt_list));
 
 	free(r);
 	return rc;
@@ -509,6 +536,7 @@ static void
 __mwr_update_timeouts(mw_rat_t *r)
 {
 	struct timeval curtime, diff;
+	mw_tagged_pkt_list_ent_t *e;
 
 	gettimeofday(&curtime, NULL);
 
@@ -519,6 +547,11 @@ __mwr_update_timeouts(mw_rat_t *r)
 
 	mw_timeval_difference(&r->mwr_name_pkt_timeout,
 	                      &r->mwr_name_pkt_timeout, &diff);
+
+	list_for_each_entry(e, &r->mwr_tagged_pkt_list, mwtple_list) {
+		mw_timeval_difference(&e->mwtple_timeout,
+		                      &e->mwtple_timeout, &diff);
+	}
 
 	gettimeofday(&r->mwr_lasttime, NULL);
 }
@@ -545,6 +578,34 @@ __mwr_name_pkt_timeout_triggered(mw_rat_t *r)
 	return 0;
 }
 
+static int
+__mwr_tagged_pkt_timeout_triggered(struct timeval *timeout)
+{
+	if (mw_timeval_timeout_triggered(timeout)) {
+		__mwr_init_tagged_pkt_timeout(timeout);
+		return 1;
+	}
+
+	return 0;
+}
+
+static void
+__mwr_resend_tagged_pkts(mw_rat_t *r)
+{
+	mw_tagged_pkt_list_ent_t *e;
+	list_for_each_entry(e, &r->mwr_tagged_pkt_list, mwtple_list) {
+		if (__mwr_tagged_pkt_timeout_triggered(&e->mwtple_timeout)) {
+			/* XXX: Should really check error code */
+			/* TODO: Uncomment this when the tagged
+			 * acknowledgement packets are implemnted.
+			sendto(r->mwr_mcast_socket, e->mwtple_pkt,
+			       sizeof(mw_pkt_tagged_t), 0,
+			       r->mwr_mcast_addr, sizeof(struct sockaddr));
+			 */
+		}
+	}
+}
+
 void
 mwr_update(mw_rat_t *r, int **maze)
 {
@@ -559,6 +620,8 @@ mwr_update(mw_rat_t *r, int **maze)
 
 	if (__mwr_name_pkt_timeout_triggered(r))
 		mwr_send_name_pkt(r);
+
+	__mwr_resend_tagged_pkts(r);
 }
 
 void
@@ -664,25 +727,50 @@ mwr_send_leaving_pkt(mw_rat_t *r)
 int
 mwr_send_tagged_pkt(mw_rat_t *r, mw_guid_t shooter_id)
 {
-	mw_pkt_tagged_t pkt;
+	mw_tagged_pkt_list_ent_t *ent;
+	mw_pkt_tagged_t          *pkt;
+	int rc;
 
 	if (!r->mwr_is_local)
 		return 0;
 
 	ASSERT(r->mwr_mcast_addr != NULL);
 
-	__mwr_init_header_pkt(r, &pkt.mwpt_header,
+	ent = (mw_tagged_pkt_list_ent_t*)
+	                         malloc(sizeof(mw_tagged_pkt_list_ent_t));
+	if (ent == NULL) {
+		rc = -ENOMEM;
+		goto ent_fail;
+	}
+
+	pkt = (mw_pkt_tagged_t *)malloc(sizeof(mw_pkt_tagged_t));
+	if (pkt == NULL) {
+		rc = -ENOMEM;
+		goto pkt_fail;
+	}
+
+	list_add_tail(&ent->mwtple_list, &r->mwr_tagged_pkt_list);
+	ent->mwtple_pkt = pkt;
+	__mwr_init_tagged_pkt_timeout(&ent->mwtple_timeout);
+
+	__mwr_init_header_pkt(r, &pkt->mwpt_header,
 	                      MW_PKT_HDR_DESCRIPTOR_TAGGED);
 
-	pkt.mwpt_shooter_guid = shooter_id;
+	pkt->mwpt_shooter_guid = shooter_id;
 
-	memset(pkt.mwpt_mbz, 0, sizeof(pkt.mwpt_mbz));
+	memset(pkt->mwpt_mbz, 0, sizeof(pkt->mwpt_mbz));
 
 	/* TODO: These messages must be acknowledged. If an ACK is not
 	 * received in a timely manner, they must to be retransmitted.
 	 */
 
 	/* TODO: Must swab pkt before sending it on the wire */
-	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_tagged_t), 0,
+	return sendto(r->mwr_mcast_socket, pkt, sizeof(mw_pkt_tagged_t), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
+
+pkt_fail:
+	free(ent);
+
+ent_fail:
+	return rc;
 }
