@@ -466,13 +466,23 @@ mwr_tagged_by(mw_rat_t *r, mw_guid_t tagger_id)
 	return 0;
 }
 
+/* XXX: A bit of a hack passing in the seqno to this function, but no
+ * time to think of a better solution.
+ */
 int
-mwr_tagged(mw_rat_t *r, mw_guid_t taggee_id)
+mwr_tagged(mw_rat_t *r, mw_guid_t taggee_id, mw_seqno_t pkt_seqno)
 {
 	mw_pos_t x, y;
 
 	if (!r->mwr_is_local)
 		return -1;
+
+	/* TODO: Need to check if this seqno has already been ACK'ed. If
+	 * so, we must not increment the score and such another time.
+	 * Instead we just need to re acknowledge this tagged packet.
+	 * Changes are the previous ACK was dropped, so the remote
+	 * client resent the tagged packet.
+	 */
 
 	mwr_increment_score(r, 11);
 
@@ -497,7 +507,7 @@ mwr_tagged(mw_rat_t *r, mw_guid_t taggee_id)
 		mwr_rm_missile(r);
 	}
 
-	return 0;
+	return mwr_send_ack_pkt(r, taggee_id, pkt_seqno);
 }
 
 static void
@@ -596,6 +606,7 @@ __mwr_resend_tagged_pkts(mw_rat_t *r)
 	list_for_each_entry(e, &r->mwr_tagged_pkt_list, mwtple_list) {
 		if (__mwr_tagged_pkt_timeout_triggered(&e->mwtple_timeout)) {
 			/* XXX: Should really check error code */
+			/* TODO: Must swab pkt before sending it on the wire */
 			/* TODO: Uncomment this when the tagged
 			 * acknowledgement packets are implemnted.
 			sendto(r->mwr_mcast_socket, e->mwtple_pkt,
@@ -773,4 +784,27 @@ pkt_fail:
 
 ent_fail:
 	return rc;
+}
+
+int
+mwr_send_ack_pkt(mw_rat_t *r, mw_guid_t ack_id, mw_seqno_t ack_seqno)
+{
+	mw_pkt_ack_t pkt;
+
+	if (!r->mwr_is_local)
+		return 0;
+
+	ASSERT(r->mwr_mcast_addr != NULL);
+
+	__mwr_init_header_pkt(r, &pkt.mwpa_header,
+	                      MW_PKT_HDR_DESCRIPTOR_ACK);
+
+	pkt.mwpa_guid  = ack_id;
+	pkt.mwpa_seqno = ack_seqno;
+
+	memset(pkt.mwpa_mbz, 0, sizeof(pkt.mwpa_mbz));
+
+	/* TODO: Must swab pkt before sending it on the wire */
+	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_ack_t), 0,
+	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 }

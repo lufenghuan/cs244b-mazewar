@@ -163,6 +163,23 @@ mw_print_pkt_tagged(const mw_pkt_tagged_t *pkt)
 }
 
 void
+mw_print_pkt_ack(const mw_pkt_ack_t *pkt)
+{
+	unsigned int i;
+	char buf[16];
+
+	mw_print_pkt_header(&pkt->mwpa_header);
+
+	__PRINT(pkt->mwpa_guid,  "0x%lx", "ack_guid");
+	__PRINT(pkt->mwpa_seqno, "0x%lx", "ack_seqno");
+
+	for (i = 0; i < sizeof(pkt->mwpa_mbz); i++) {
+		snprintf(buf, 16, "mbz[%i]", i);
+		__PRINT(pkt->mwpa_mbz[i], "0x%x", buf);
+	}
+}
+
+void
 mw_posdir_pack(uint32_t *posdir, mw_pos_t _x, mw_pos_t _y, mw_dir_t _dir)
 {
 	/* make local copies of position and direction with known sizes.

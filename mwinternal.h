@@ -146,13 +146,14 @@ int  mwr_is_occupying_cell(mw_rat_t *r, mw_pos_t x, mw_pos_t y);
 int  mwr_missile_is_occupying_cell(mw_rat_t *r, mw_pos_t x, mw_pos_t y);
 int  mwr_fire_missile(mw_rat_t *r, int **maze);
 int  mwr_tagged_by(mw_rat_t *r, mw_guid_t tagger_id);
-int  mwr_tagged(mw_rat_t *r, mw_guid_t taggee_id);
+int  mwr_tagged(mw_rat_t *r, mw_guid_t taggee_id, mw_seqno_t pkt_seqno);
 void mwr_update(mw_rat_t *r, int **maze);
 void mwr_set_addr(mw_rat_t *r, struct sockaddr *mcast, int socket);
 int  mwr_send_state_pkt(mw_rat_t *r);
 int  mwr_send_name_pkt(mw_rat_t *r);
 int  mwr_send_leaving_pkt(mw_rat_t *r);
 int  mwr_send_tagged_pkt(mw_rat_t *r, mw_guid_t shooter_id);
+int  mwr_send_ack_pkt(mw_rat_t *r, mw_guid_t ack_id, mw_seqno_t ack_seqno);
 
 #define MW_PKT_HDR_DESCRIPTOR_STATE    0
 #define MW_PKT_HDR_DESCRIPTOR_NICKNAME 1
@@ -163,8 +164,8 @@ int  mwr_send_tagged_pkt(mw_rat_t *r, mw_guid_t shooter_id);
 typedef struct mw_pkt_header {
 	uint8_t    mwph_descriptor;
 	uint8_t    mwph_mbz[3];
-	mw_guid_t  mwph_guid;
-	mw_seqno_t mwph_seqno;
+	uint64_t   mwph_guid;
+	uint64_t   mwph_seqno;
 } mw_pkt_header_t;
 
 typedef struct mw_pkt_state {
@@ -208,8 +209,11 @@ typedef struct mw_pkt_tagged {
 
 typedef struct mw_pkt_ack {
 	mw_pkt_header_t mwpa_header;
-	mw_guid_t       mwpa_guid;
-	mw_seqno_t      mwpa_seqno;
+	uint64_t        mwpa_guid;
+	uint64_t        mwpa_seqno;
+
+	/* Pad to total size of 64-bytes */
+	uint8_t mwpa_mbz[28];
 } mw_pkt_ack_t;
 
 typedef struct mw_pkt_leaving {
@@ -227,6 +231,7 @@ void     mw_print_pkt_state(const mw_pkt_state_t *pkt);
 void     mw_print_pkt_nickname(const mw_pkt_nickname_t *pkt);
 void     mw_print_pkt_leaving(const mw_pkt_leaving_t *pkt);
 void     mw_print_pkt_tagged(const mw_pkt_tagged_t *pkt);
+void     mw_print_pkt_ack(const mw_pkt_ack_t *pkt);
 void     mw_posdir_pack(uint32_t *posdir, mw_pos_t x, mw_pos_t y,
                         mw_dir_t dir);
 void     mw_posdir_unpack(uint32_t posdir, mw_pos_t *x, mw_pos_t *y,

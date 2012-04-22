@@ -380,7 +380,14 @@ __mws_process_pkt_tagged(mw_state_t *s, mw_pkt_tagged_t *pkt)
 
 	mw_rat_t *r = __mws_get_rat(s, pkt->mwpt_shooter_guid);
 	if (r != NULL) /* XXX: No rat for this guid? */
-		mwr_tagged(r, pkt->mwpt_header.mwph_guid);
+		mwr_tagged(r, pkt->mwpt_header.mwph_guid,
+		              pkt->mwpt_header.mwph_seqno);
+}
+
+void
+__mws_process_pkt_ack(mw_state_t *s, mw_pkt_ack_t *pkt)
+{
+	/* TODO: Add implementation */
 }
 
 void
@@ -403,6 +410,9 @@ mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt)
 		break;
 	case MW_PKT_HDR_DESCRIPTOR_TAGGED:
 		__mws_process_pkt_tagged(s, (mw_pkt_tagged_t *)pkt);
+		break;
+	case MW_PKT_HDR_DESCRIPTOR_ACK:
+		__mws_process_pkt_ack(s, (mw_pkt_ack_t *)pkt);
 		break;
 	default:
 		/* A packet was received with an unknown descriptor
