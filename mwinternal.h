@@ -88,6 +88,7 @@ int  mwm_is_occupying_cell(mw_missile_t *m, mw_pos_t x, mw_pos_t y);
 typedef struct mw_rat {
 	struct list_head  mwr_list;
 	struct list_head  mwr_tagged_pkt_list;
+	struct list_head  mwr_acked_pkt_list;
 
 	mw_guid_t         mwr_id;
 	int               mwr_mw_index;

@@ -21,6 +21,11 @@ typedef struct mw_tagged_pkt_list_ent {
 	struct timeval    mwtple_timeout;
 } mw_tagged_pkt_list_ent_t;
 
+typedef struct mw_acked_pkt_list_ent {
+	struct list_head mwaple_list;
+	mw_seqno_t       mwaple_seqno;
+} mw_acked_pkt_list_ent_t;
+
 typedef struct mw_index_hole {
 	struct list_head mwih_list;
 	unsigned int     mwih_index;
@@ -73,6 +78,7 @@ mwr_cons(mw_rat_t **r, mw_guid_t *id,
 
 	INIT_LIST_HEAD(&tmp->mwr_list);
 	INIT_LIST_HEAD(&tmp->mwr_tagged_pkt_list);
+	INIT_LIST_HEAD(&tmp->mwr_acked_pkt_list);
 
 	/* XXX: Not thread safe. Accessing Global */
 	tmp->mwr_id       = mw_rand();
@@ -155,8 +161,18 @@ mwr_dest(mw_rat_t *r)
 			free(e);
 		}
 	}
-
 	ASSERT(list_empty(&r->mwr_tagged_pkt_list));
+
+	if (!list_empty(&r->mwr_acked_pkt_list)) {
+		mw_acked_pkt_list_ent *e, *n;
+		list_for_each_entry_safe(e, n, &r->mwr_acked_pkt_list,
+		                         mwaple_list) {
+			list_del(&e->mwaple_list);
+			free(e);
+		}
+	}
+	ASSERT(list_empty(&r->mwr_acked_pkt_list));
+
 
 	free(r);
 	return rc;
@@ -473,16 +489,21 @@ int
 mwr_tagged(mw_rat_t *r, mw_guid_t taggee_id, mw_seqno_t pkt_seqno)
 {
 	mw_pos_t x, y;
+	mw_acked_pkt_list_ent_t *e;
 
 	if (!r->mwr_is_local)
 		return -1;
 
-	/* TODO: Need to check if this seqno has already been ACK'ed. If
-	 * so, we must not increment the score and such another time.
-	 * Instead we just need to re acknowledge this tagged packet.
-	 * Changes are the previous ACK was dropped, so the remote
-	 * client resent the tagged packet.
-	 */
+	list_for_each_entry(e, &r->mwr_acked_pkt_list, mwaple_list) {
+		/* This pkt_seqno has already been ACK'ed. The remote
+		 * client must not have gotten the ACK, so resend ACK.
+		 * We DO NOT want to re-increment our score though, as
+		 * we did this when we sent the first ACK for this
+		 * pkt_seqno.
+		 */
+		if (e->mwaple_seqno == pkt_seqno)
+			goto send_ack;
+	}
 
 	mwr_increment_score(r, 11);
 
@@ -507,6 +528,7 @@ mwr_tagged(mw_rat_t *r, mw_guid_t taggee_id, mw_seqno_t pkt_seqno)
 		mwr_rm_missile(r);
 	}
 
+send_ack:
 	return mwr_send_ack_pkt(r, taggee_id, pkt_seqno);
 }
 
@@ -607,12 +629,9 @@ __mwr_resend_tagged_pkts(mw_rat_t *r)
 		if (__mwr_tagged_pkt_timeout_triggered(&e->mwtple_timeout)) {
 			/* XXX: Should really check error code */
 			/* TODO: Must swab pkt before sending it on the wire */
-			/* TODO: Uncomment this when the tagged
-			 * acknowledgement packets are implemnted.
 			sendto(r->mwr_mcast_socket, e->mwtple_pkt,
 			       sizeof(mw_pkt_tagged_t), 0,
 			       r->mwr_mcast_addr, sizeof(struct sockaddr));
-			 */
 		}
 	}
 }
@@ -740,7 +759,7 @@ mwr_send_tagged_pkt(mw_rat_t *r, mw_guid_t shooter_id)
 {
 	mw_tagged_pkt_list_ent_t *ent;
 	mw_pkt_tagged_t          *pkt;
-	int rc;
+	int rc = 0;
 
 	if (!r->mwr_is_local)
 		return 0;
@@ -789,12 +808,28 @@ ent_fail:
 int
 mwr_send_ack_pkt(mw_rat_t *r, mw_guid_t ack_id, mw_seqno_t ack_seqno)
 {
+	mw_acked_pkt_list_ent_t *ent;
 	mw_pkt_ack_t pkt;
+	int rc = 0;
 
 	if (!r->mwr_is_local)
 		return 0;
 
 	ASSERT(r->mwr_mcast_addr != NULL);
+
+	ent = (mw_acked_pkt_list_ent_t *)
+	                         malloc(sizeof(mw_acked_pkt_list_ent_t));
+	if (ent == NULL) {
+		rc = -ENOMEM;
+		goto ent_fail;
+	}
+
+	/* XXX: Currently this list will continue to grow until
+	 * mwr_dest. Ideally, we should prune this list when there is no
+	 * chance of this given seqno packet being retransmitted.
+	 */
+	list_add_tail(&ent->mwaple_list, &r->mwr_acked_pkt_list);
+	ent->mwaple_seqno = ack_seqno;
 
 	__mwr_init_header_pkt(r, &pkt.mwpa_header,
 	                      MW_PKT_HDR_DESCRIPTOR_ACK);
@@ -807,4 +842,7 @@ mwr_send_ack_pkt(mw_rat_t *r, mw_guid_t ack_id, mw_seqno_t ack_seqno)
 	/* TODO: Must swab pkt before sending it on the wire */
 	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_ack_t), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
+
+ent_fail:
+	return rc;
 }
