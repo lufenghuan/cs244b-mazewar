@@ -241,6 +241,14 @@ mwr_set_score(mw_rat_t *r, mw_score_t score)
 }
 
 int
+mwr_increment_score(mw_rat_t *r, int increment)
+{
+	r->mwr_score += increment;
+	mwr_send_state_pkt(r);
+	return 0;
+}
+
+int
 mwr_rm_missile(mw_rat_t *r)
 {
 	if (r->mwr_missile == NULL)
@@ -401,17 +409,35 @@ mwr_fire_missile(mw_rat_t *r, int **maze)
 	return 0;
 }
 
+static void
+__mwr_new_posdir(mw_rat_t *r)
+{
+	NewPosition(M);
+	mwr_set_xpos(r, MY_X_LOC);
+	mwr_set_ypos(r, MY_Y_LOC);
+	mwr_set_dir(r, MY_MW_DIR_T);
+}
+
 int
 mwr_tagged_by(mw_rat_t *r, mw_guid_t tagger_id)
 {
-	/* TODO: Add implementation */
+	if (!r->mwr_is_local)
+		return -1;
+
+	mwr_increment_score(r, -5);
+	__mwr_new_posdir(r);
+
+	/* TODO: Need to send tagged packet */
 	return 0;
 }
 
 int
 mwr_tagged(mw_rat_t *r, mw_guid_t taggee_id)
 {
-	/* TODO: Add implementation */
+	/* This is a no-op. According to the Mazewar Protocol, tagged
+	 * rats report that they have been tagged. The tagger rat just
+	 * waits for the tagged packet to arrive and determines it
+	 * tagged another rat through that mechanism. */
 	return 0;
 }
 

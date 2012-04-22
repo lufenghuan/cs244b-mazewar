@@ -132,6 +132,7 @@ int  mwr_set_ypos(mw_rat_t *r, mw_pos_t y);
 int  mwr_set_dir(mw_rat_t *r, mw_dir_t dir);
 int  mwr_set_missile_packed_posdir(mw_rat_t *r, uint32_t posdir);
 int  mwr_set_score(mw_rat_t *r, mw_score_t score);
+int  mwr_increment_score(mw_rat_t *r, int increment);
 int  mwr_rm_missile(mw_rat_t *r);
 int  mwr_set_is_local_flag(mw_rat_t *r, int is_local);
 int  mwr_set_id(mw_rat_t *r, mw_guid_t guid);
