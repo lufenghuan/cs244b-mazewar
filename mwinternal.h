@@ -83,6 +83,7 @@ int  mwm_set_dir(mw_missile_t *m, mw_dir_t dir);
 void mwm_get_xpos(mw_missile_t *m, mw_pos_t *x);
 void mwm_get_ypos(mw_missile_t *m, mw_pos_t *y);
 void mwm_get_packed_posdir(mw_missile_t *m, uint32_t *posdir);
+int  mwm_is_occupying_cell(mw_missile_t *m, mw_pos_t x, mw_pos_t y);
 
 typedef struct mw_rat {
 	struct list_head  mwr_list;
@@ -138,8 +139,12 @@ int  mwr_set_name(mw_rat_t *r, const char *name);
 int  mwr_get_xpos(mw_rat_t *r, mw_pos_t *x);
 int  mwr_get_ypos(mw_rat_t *r, mw_pos_t *y);
 int  mwr_get_score(mw_rat_t *r, mw_score_t *score);
+int  mwr_get_id(mw_rat_t *r, mw_guid_t *id);
 int  mwr_is_occupying_cell(mw_rat_t *r, mw_pos_t x, mw_pos_t y);
+int  mwr_missile_is_occupying_cell(mw_rat_t *r, mw_pos_t x, mw_pos_t y);
 int  mwr_fire_missile(mw_rat_t *r, int **maze);
+int  mwr_tagged_by(mw_rat_t *r, mw_guid_t tagger_id);
+int  mwr_tagged(mw_rat_t *r, mw_guid_t taggee_id);
 void mwr_update(mw_rat_t *r, int **maze);
 void mwr_set_addr(mw_rat_t *r, struct sockaddr *mcast, int socket);
 int  mwr_send_state_pkt(mw_rat_t *r);

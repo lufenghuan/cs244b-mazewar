@@ -151,9 +151,10 @@ mws_render_draw(const mw_state_t *s)
 static void
 __mws_update_rats(mw_state_t *s)
 {
+	mw_rat_t *r;
+
 	ASSERT(s->mws_mcast_addr != NULL);
 
-	mw_rat_t *r;
 	list_for_each_entry(r, &s->mws_rats, mwr_list) {
 		mwr_update(r, s->mws_maze);
 	}
@@ -172,6 +173,36 @@ __mws_update_elapsedtime(mw_state_t *s)
 	gettimeofday(&s->mws_lasttime, NULL);
 }
 
+static void
+__mws_check_for_tagging(mw_state_t *s)
+{
+	mw_rat_t *r;
+
+	list_for_each_entry(r, &s->mws_rats, mwr_list) {
+		mw_guid_t  tagger_id;
+		mw_rat_t  *each;
+
+		mwr_get_id(r, &tagger_id);
+
+		list_for_each_entry(each, &s->mws_rats, mwr_list) {
+			mw_guid_t taggee_id;
+			mw_pos_t  x, y;
+
+			if (each == r) /* Can't tag yourself */
+				continue;
+
+			mwr_get_id(each, &taggee_id);
+			mwr_get_xpos(each, &x);
+			mwr_get_ypos(each, &y);
+
+			if (mwr_missile_is_occupying_cell(r, x, y)) {
+				mwr_tagged_by(each, tagger_id);
+				mwr_tagged(r, taggee_id);
+			}
+		}
+	}
+}
+
 void
 mws_update(mw_state_t *s)
 {
@@ -186,6 +217,7 @@ mws_update(mw_state_t *s)
 		}
 	} else {
 		__mws_update_rats(s);
+		__mws_check_for_tagging(s);
 	}
 }
 

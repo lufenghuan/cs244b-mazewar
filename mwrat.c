@@ -305,6 +305,13 @@ mwr_get_score(mw_rat_t *r, mw_score_t *score)
 	return 0;
 }
 
+int
+mwr_get_id(mw_rat_t *r, mw_guid_t *id)
+{
+	*id = r->mwr_id;
+	return 0;
+}
+
 void
 __mwr_xpos_plus_dir(mw_pos_t *xnew, mw_pos_t xold, mw_dir_t dir)
 {
@@ -349,6 +356,15 @@ mwr_is_occupying_cell(mw_rat_t *r, mw_pos_t x, mw_pos_t y)
 }
 
 int
+mwr_missile_is_occupying_cell(mw_rat_t *r, mw_pos_t x, mw_pos_t y)
+{
+	if (r->mwr_missile == NULL)
+		return 0;
+
+	return mwm_is_occupying_cell(r->mwr_missile, x, y);
+}
+
+int
 mwr_fire_missile(mw_rat_t *r, int **maze)
 {
 	mw_pos_t x, y;
@@ -381,6 +397,20 @@ mwr_fire_missile(mw_rat_t *r, int **maze)
 
 	/* Need to let peers know about this new missile. */
 	mwr_send_state_pkt(r);
+	return 0;
+}
+
+int
+mwr_tagged_by(mw_rat_t *r, mw_guid_t tagger_id)
+{
+	/* TODO: Add implementation */
+	return 0;
+}
+
+int
+mwr_tagged(mw_rat_t *r, mw_guid_t taggee_id)
+{
+	/* TODO: Add implementation */
 	return 0;
 }
 

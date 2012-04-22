@@ -173,4 +173,13 @@ mwm_get_packed_posdir(mw_missile_t *m, uint32_t *posdir)
 	mw_posdir_pack(posdir, m->mwm_x_pos, m->mwm_y_pos, m->mwm_dir);
 }
 
+int
+mwm_is_occupying_cell(mw_missile_t *m, mw_pos_t x, mw_pos_t y)
+{
+	if (m->mwm_x_pos == x && m->mwm_y_pos == y)
+		return 1;
+
+	return 0;
+}
+
 /* vim: set tabstop=8 shiftwidth=8 noexpandtab: */
