@@ -147,6 +147,22 @@ mw_print_pkt_leaving(const mw_pkt_leaving_t *pkt)
 }
 
 void
+mw_print_pkt_tagged(const mw_pkt_tagged_t *pkt)
+{
+	unsigned int i;
+	char buf[16];
+
+	mw_print_pkt_header(&pkt->mwpt_header);
+
+	__PRINT(pkt->mwpt_shooter_guid, "0x%lx", "shooter_guid");
+
+	for (i = 0; i < sizeof(pkt->mwpt_mbz); i++) {
+		snprintf(buf, 16, "mbz[%i]", i);
+		__PRINT(pkt->mwpt_mbz[i], "0x%x", buf);
+	}
+}
+
+void
 mw_posdir_pack(uint32_t *posdir, mw_pos_t _x, mw_pos_t _y, mw_dir_t _dir)
 {
 	/* make local copies of position and direction with known sizes.
@@ -208,4 +224,3 @@ mw_posdir_unpack(uint32_t posdir, mw_pos_t *x, mw_pos_t *y, mw_dir_t *dir)
 		break;
 	}
 }
-

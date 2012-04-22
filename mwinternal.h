@@ -151,6 +151,7 @@ void mwr_set_addr(mw_rat_t *r, struct sockaddr *mcast, int socket);
 int  mwr_send_state_pkt(mw_rat_t *r);
 int  mwr_send_name_pkt(mw_rat_t *r);
 int  mwr_send_leaving_pkt(mw_rat_t *r);
+int  mwr_send_tagged_pkt(mw_rat_t *r, mw_guid_t shooter_id);
 
 #define MW_PKT_HDR_DESCRIPTOR_STATE    0
 #define MW_PKT_HDR_DESCRIPTOR_NICKNAME 1
@@ -199,6 +200,9 @@ typedef struct mw_pkt_nickname {
 typedef struct mw_pkt_tagged {
 	mw_pkt_header_t mwpt_header;
 	uint64_t        mwpt_shooter_guid;
+
+	/* Pad to total size of 64-bytes */
+	uint8_t mwpt_mbz[36];
 } mw_pkt_tagged_t;
 
 typedef struct mw_pkt_ack {
@@ -221,6 +225,7 @@ void     mw_print_pkt_header(const mw_pkt_header_t *pkt);
 void     mw_print_pkt_state(const mw_pkt_state_t *pkt);
 void     mw_print_pkt_nickname(const mw_pkt_nickname_t *pkt);
 void     mw_print_pkt_leaving(const mw_pkt_leaving_t *pkt);
+void     mw_print_pkt_tagged(const mw_pkt_tagged_t *pkt);
 void     mw_posdir_pack(uint32_t *posdir, mw_pos_t x, mw_pos_t y,
                         mw_dir_t dir);
 void     mw_posdir_unpack(uint32_t posdir, mw_pos_t *x, mw_pos_t *y,

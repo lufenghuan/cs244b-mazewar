@@ -427,7 +427,7 @@ mwr_tagged_by(mw_rat_t *r, mw_guid_t tagger_id)
 	mwr_increment_score(r, -5);
 	__mwr_new_posdir(r);
 
-	/* TODO: Need to send tagged packet */
+	mwr_send_tagged_pkt(r, tagger_id);
 	return 0;
 }
 
@@ -536,6 +536,17 @@ mwr_set_addr(mw_rat_t *r, struct sockaddr *mcast, int socket)
 	r->mwr_mcast_socket = socket;
 }
 
+void
+__mwr_init_header_pkt(mw_rat_t *r, mw_pkt_header_t *pkt, uint8_t descriptor)
+{
+	pkt->mwph_descriptor = descriptor;
+	pkt->mwph_mbz[0]     = 0;
+	pkt->mwph_mbz[1]     = 0;
+	pkt->mwph_mbz[2]     = 0;
+	pkt->mwph_guid       = r->mwr_id;
+	pkt->mwph_seqno      = r->mwr_pkt_seqno++;
+}
+
 int
 mwr_send_state_pkt(mw_rat_t *r)
 {
@@ -546,13 +557,9 @@ mwr_send_state_pkt(mw_rat_t *r)
 
 	ASSERT(r->mwr_mcast_addr != NULL);
 
-	/* TODO: Fill in pkt with actual state information */
-	pkt.mwps_header.mwph_descriptor = MW_PKT_HDR_DESCRIPTOR_STATE;
-	pkt.mwps_header.mwph_mbz[0]     = 0;
-	pkt.mwps_header.mwph_mbz[1]     = 0;
-	pkt.mwps_header.mwph_mbz[2]     = 0;
-	pkt.mwps_header.mwph_guid       = r->mwr_id;
-	pkt.mwps_header.mwph_seqno      = r->mwr_pkt_seqno++;
+	__mwr_init_header_pkt(r, &pkt.mwps_header,
+	                      MW_PKT_HDR_DESCRIPTOR_STATE);
+
 	pkt.mwps_score                  = r->mwr_score;
 	pkt.mwps_crt                    = mw_rand();
 
@@ -587,12 +594,8 @@ mwr_send_name_pkt(mw_rat_t *r)
 
 	ASSERT(r->mwr_mcast_addr != NULL);
 
-	pkt.mwpn_header.mwph_descriptor = MW_PKT_HDR_DESCRIPTOR_NICKNAME;
-	pkt.mwpn_header.mwph_mbz[0]     = 0;
-	pkt.mwpn_header.mwph_mbz[1]     = 0;
-	pkt.mwpn_header.mwph_mbz[2]     = 0;
-	pkt.mwpn_header.mwph_guid       = r->mwr_id;
-	pkt.mwpn_header.mwph_seqno      = r->mwr_pkt_seqno++;
+	__mwr_init_header_pkt(r, &pkt.mwpn_header,
+	                      MW_PKT_HDR_DESCRIPTOR_NICKNAME);
 
 	strncpy((char *)&pkt.mwpn_nickname, r->mwr_name, MW_NICKNAME_LEN);
 	pkt.mwpn_nickname[MW_NICKNAME_LEN-1] = '\0';
@@ -614,18 +617,40 @@ mwr_send_leaving_pkt(mw_rat_t *r)
 
 	ASSERT(r->mwr_mcast_addr != NULL);
 
-	pkt.mwpl_header.mwph_descriptor = MW_PKT_HDR_DESCRIPTOR_LEAVING;
-	pkt.mwpl_header.mwph_mbz[0]     = 0;
-	pkt.mwpl_header.mwph_mbz[1]     = 0;
-	pkt.mwpl_header.mwph_mbz[2]     = 0;
-	pkt.mwpl_header.mwph_guid       = r->mwr_id;
-	pkt.mwpl_header.mwph_seqno      = r->mwr_pkt_seqno++;
+	__mwr_init_header_pkt(r, &pkt.mwpl_header,
+	                      MW_PKT_HDR_DESCRIPTOR_LEAVING);
 
-	pkt.mwpl_leaving_guid           = r->mwr_id;
+	pkt.mwpl_leaving_guid = r->mwr_id;
 
 	memset(pkt.mwpl_mbz, 0, sizeof(pkt.mwpl_mbz));
 
 	/* TODO: Must swab pkt before sending it on the wire */
 	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_leaving_t), 0,
+	              r->mwr_mcast_addr, sizeof(struct sockaddr));
+}
+
+int
+mwr_send_tagged_pkt(mw_rat_t *r, mw_guid_t shooter_id)
+{
+	mw_pkt_tagged_t pkt;
+
+	if (!r->mwr_is_local)
+		return 0;
+
+	ASSERT(r->mwr_mcast_addr != NULL);
+
+	__mwr_init_header_pkt(r, &pkt.mwpt_header,
+	                      MW_PKT_HDR_DESCRIPTOR_TAGGED);
+
+	pkt.mwpt_shooter_guid = shooter_id;
+
+	memset(pkt.mwpt_mbz, 0, sizeof(pkt.mwpt_mbz));
+
+	/* TODO: These messages must be acknowledged. If an ACK is not
+	 * received in a timely manner, they must to be retransmitted.
+	 */
+
+	/* TODO: Must swab pkt before sending it on the wire */
+	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_tagged_t), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 }

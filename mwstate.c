@@ -372,6 +372,12 @@ __mws_process_pkt_leaving(mw_state_t *s, mw_pkt_leaving_t *pkt)
 }
 
 void
+__mws_process_pkt_tagged(mw_state_t *s, mw_pkt_tagged_t *pkt)
+{
+	/* TODO: Add implementation */
+}
+
+void
 mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt)
 {
 	/* TODO: Must swab pkt before processing it */
@@ -388,6 +394,9 @@ mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt)
 		break;
 	case MW_PKT_HDR_DESCRIPTOR_LEAVING:
 		__mws_process_pkt_leaving(s, (mw_pkt_leaving_t *)pkt);
+		break;
+	case MW_PKT_HDR_DESCRIPTOR_TAGGED:
+		__mws_process_pkt_tagged(s, (mw_pkt_tagged_t *)pkt);
 		break;
 	default:
 		/* A packet was received with an unknown descriptor
