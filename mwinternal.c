@@ -6,6 +6,15 @@
 
 #include <stdio.h>
 
+/* See: http://humblesblog.blogspot.com/2011/11/htonll-64bit-host-to-network-conversion.html */
+#if __BYTE_ORDER == __BIG_ENDIAN
+# define HTONLL02(x) (x)
+#else
+# if __BYTE_ORDER == __LITTLE_ENDIAN
+#  define HTONLL02(x) (((uint64_t)htonl((uint32_t)x))<<32 | htonl((uint32_t)(x>>32)))
+# endif
+#endif
+
 /* Source: www.gnu.org/softwar/libc/manual/html_node/Elapsed-Time.html */
 void
 mw_timeval_difference(struct timeval *diff,
@@ -177,6 +186,51 @@ mw_print_pkt_ack(const mw_pkt_ack_t *pkt)
 		snprintf(buf, 16, "mbz[%i]", i);
 		__PRINT(pkt->mwpa_mbz[i], "0x%x", buf);
 	}
+}
+
+void
+mw_hton_pkt_header(mw_pkt_header_t *pkt)
+{
+	pkt->mwph_guid  = HTONLL02(pkt->mwph_guid);
+	pkt->mwph_seqno = HTONLL02(pkt->mwph_seqno);
+}
+
+void
+mw_hton_pkt_state(mw_pkt_state_t *pkt)
+{
+	mw_hton_pkt_header(&pkt->mwps_header);
+	pkt->mwps_rat_posdir     = htonl(pkt->mwps_rat_posdir);
+	pkt->mwps_missile_posdir = htonl(pkt->mwps_missile_posdir);
+	pkt->mwps_score          = htonl(pkt->mwps_score);
+	pkt->mwps_crt            = HTONLL02(pkt->mwps_crt);
+}
+
+void
+mw_hton_pkt_nickname(mw_pkt_nickname_t *pkt)
+{
+	mw_hton_pkt_header(&pkt->mwpn_header);
+}
+
+void
+mw_hton_pkt_tagged(mw_pkt_tagged_t *pkt)
+{
+	mw_hton_pkt_header(&pkt->mwpt_header);
+	pkt->mwpt_shooter_guid = HTONLL02(pkt->mwpt_shooter_guid);
+}
+
+void
+mw_hton_pkt_ack(mw_pkt_ack_t *pkt)
+{
+	mw_hton_pkt_header(&pkt->mwpa_header);
+	pkt->mwpa_guid  = HTONLL02(pkt->mwpa_guid);
+	pkt->mwpa_seqno = HTONLL02(pkt->mwpa_seqno);
+}
+
+void
+mw_hton_pkt_leaving(mw_pkt_leaving_t *pkt)
+{
+	mw_hton_pkt_header(&pkt->mwpl_header);
+	pkt->mwpl_leaving_guid = HTONLL02(pkt->mwpl_leaving_guid);
 }
 
 void
