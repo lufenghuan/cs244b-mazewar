@@ -245,7 +245,6 @@ mw_ntoh_pkt_header(mw_pkt_header_t *pkt)
 void
 mw_ntoh_pkt_state(mw_pkt_state_t *pkt)
 {
-	mw_ntoh_pkt_header(&pkt->mwps_header);
 	pkt->mwps_rat_posdir     = ntohl(pkt->mwps_rat_posdir);
 	pkt->mwps_missile_posdir = ntohl(pkt->mwps_missile_posdir);
 	pkt->mwps_score          = ntohl(pkt->mwps_score);
@@ -255,20 +254,18 @@ mw_ntoh_pkt_state(mw_pkt_state_t *pkt)
 void
 mw_ntoh_pkt_nickname(mw_pkt_nickname_t *pkt)
 {
-	mw_ntoh_pkt_header(&pkt->mwpn_header);
+	/* no-op */
 }
 
 void
 mw_ntoh_pkt_tagged(mw_pkt_tagged_t *pkt)
 {
-	mw_ntoh_pkt_header(&pkt->mwpt_header);
 	pkt->mwpt_shooter_guid = NTOHLL02(pkt->mwpt_shooter_guid);
 }
 
 void
 mw_ntoh_pkt_ack(mw_pkt_ack_t *pkt)
 {
-	mw_ntoh_pkt_header(&pkt->mwpa_header);
 	pkt->mwpa_guid  = NTOHLL02(pkt->mwpa_guid);
 	pkt->mwpa_seqno = NTOHLL02(pkt->mwpa_seqno);
 }
@@ -276,7 +273,6 @@ mw_ntoh_pkt_ack(mw_pkt_ack_t *pkt)
 void
 mw_ntoh_pkt_leaving(mw_pkt_leaving_t *pkt)
 {
-	mw_ntoh_pkt_header(&pkt->mwpl_header);
 	pkt->mwpl_leaving_guid = NTOHLL02(pkt->mwpl_leaving_guid);
 }
 

@@ -469,7 +469,7 @@ mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt)
 {
 	mw_rat_list_ent_t *e;
 
-	/* TODO: Must swab pkt before processing it */
+	mw_ntoh_pkt_header(pkt);
 
 	if (s->mws_local_rat_id == pkt->mwph_guid)
 		return; /* Ignore our own local rat's packets */
@@ -484,18 +484,23 @@ mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt)
 
 	switch (pkt->mwph_descriptor) {
 	case MW_PKT_HDR_DESCRIPTOR_STATE:
+		mw_ntoh_pkt_state((mw_pkt_state_t *)pkt);
 		__mws_process_pkt_state(s, (mw_pkt_state_t *)pkt);
 		break;
 	case MW_PKT_HDR_DESCRIPTOR_NICKNAME:
+		mw_ntoh_pkt_nickname((mw_pkt_nickname_t *)pkt);
 		__mws_process_pkt_nickname(s, (mw_pkt_nickname_t *)pkt);
 		break;
 	case MW_PKT_HDR_DESCRIPTOR_LEAVING:
+		mw_ntoh_pkt_leaving((mw_pkt_leaving_t *)pkt);
 		__mws_process_pkt_leaving(s, (mw_pkt_leaving_t *)pkt);
 		break;
 	case MW_PKT_HDR_DESCRIPTOR_TAGGED:
+		mw_ntoh_pkt_tagged((mw_pkt_tagged_t *)pkt);
 		__mws_process_pkt_tagged(s, (mw_pkt_tagged_t *)pkt);
 		break;
 	case MW_PKT_HDR_DESCRIPTOR_ACK:
+		mw_ntoh_pkt_ack((mw_pkt_ack_t *)pkt);
 		__mws_process_pkt_ack(s, (mw_pkt_ack_t *)pkt);
 		break;
 	default:

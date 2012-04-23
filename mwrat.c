@@ -624,7 +624,7 @@ __mwr_resend_tagged_pkts(mw_rat_t *r)
 	list_for_each_entry(e, &r->mwr_tagged_pkt_list, mwtple_list) {
 		if (__mwr_tagged_pkt_timeout_triggered(&e->mwtple_timeout)) {
 			/* XXX: Should really check error code */
-			/* TODO: Must swab pkt before sending it on the wire */
+			/* Packet has already been swabbed. */
 			sendto(r->mwr_mcast_socket, e->mwtple_pkt,
 			       sizeof(mw_pkt_tagged_t), 0,
 			       r->mwr_mcast_addr, sizeof(struct sockaddr));
@@ -700,7 +700,7 @@ mwr_send_state_pkt(mw_rat_t *r)
 	 */
 	__mwr_init_state_pkt_timeout(&r->mwr_state_pkt_timeout);
 
-	/* TODO: Must swab pkt before sending it on the wire */
+	mw_hton_pkt_state(&pkt);
 	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_state_t), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 }
@@ -723,7 +723,7 @@ mwr_send_name_pkt(mw_rat_t *r)
 
 	memset(pkt.mwpn_mbz, 0, sizeof(pkt.mwpn_mbz));
 
-	/* TODO: Must swab pkt before sending it on the wire */
+	mw_hton_pkt_nickname(&pkt);
 	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_nickname_t), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 }
@@ -745,7 +745,7 @@ mwr_send_leaving_pkt(mw_rat_t *r)
 
 	memset(pkt.mwpl_mbz, 0, sizeof(pkt.mwpl_mbz));
 
-	/* TODO: Must swab pkt before sending it on the wire */
+	mw_hton_pkt_leaving(&pkt);
 	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_leaving_t), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 }
@@ -786,7 +786,7 @@ mwr_send_tagged_pkt(mw_rat_t *r, mw_guid_t shooter_id)
 
 	memset(pkt->mwpt_mbz, 0, sizeof(pkt->mwpt_mbz));
 
-	/* TODO: Must swab pkt before sending it on the wire */
+	mw_hton_pkt_tagged(pkt);
 	return sendto(r->mwr_mcast_socket, pkt, sizeof(mw_pkt_tagged_t), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 
@@ -831,7 +831,7 @@ mwr_send_ack_pkt(mw_rat_t *r, mw_guid_t ack_id, mw_seqno_t ack_seqno)
 
 	memset(pkt.mwpa_mbz, 0, sizeof(pkt.mwpa_mbz));
 
-	/* TODO: Must swab pkt before sending it on the wire */
+	mw_hton_pkt_ack(&pkt);
 	return sendto(r->mwr_mcast_socket, &pkt, sizeof(mw_pkt_ack_t), 0,
 	              r->mwr_mcast_addr, sizeof(struct sockaddr));
 
