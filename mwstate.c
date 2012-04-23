@@ -299,7 +299,7 @@ mws_set_local_rat(mw_state_t *s, mw_guid_t id)
 }
 
 int
-__mwr_is_cell_occupied(mw_state_t *s, mw_pos_t x, mw_pos_t y)
+__mws_is_cell_occupied(mw_state_t *s, mw_pos_t x, mw_pos_t y)
 {
 	mw_rat_list_ent_t *e;
 	list_for_each_entry(e, &s->mws_rat_list, mwrle_list) {
@@ -327,7 +327,7 @@ mws_set_rat_xpos(mw_state_t *s, mw_guid_t id, mw_pos_t x)
 		return -1;
 
 	mwr_get_ypos(r, &y);
-	if (__mwr_is_cell_occupied(s, x, y))
+	if (__mws_is_cell_occupied(s, x, y))
 		return -1;
 
 	return mwr_set_xpos(r, x);
@@ -346,7 +346,7 @@ mws_set_rat_ypos(mw_state_t *s, mw_guid_t id, mw_pos_t y)
 		return -1;
 
 	mwr_get_xpos(r, &x);
-	if (__mwr_is_cell_occupied(s, x, y))
+	if (__mws_is_cell_occupied(s, x, y))
 		return -1;
 
 	return mwr_set_ypos(r, y);
@@ -385,6 +385,22 @@ __mws_set_rat_id(mw_state_t *s, mw_guid_t old, mw_guid_t _new)
 	return mwr_set_id(r, _new);
 }
 
+int
+__mws_is_local_occupying_cell(mw_state_t *s, mw_pos_t x, mw_pos_t y)
+{
+	mw_pos_t local_x, local_y;
+	mw_rat_t *r;
+
+	r = __mws_get_rat(s, s->mws_local_rat_id);
+	if (r == NULL) /* XXX: No local rat? */
+		return 0;
+
+	mwr_get_xpos(r, &local_x);
+	mwr_get_ypos(r, &local_y);
+
+	return (x == local_x && y == local_y);
+}
+
 void
 __mws_process_pkt_state(mw_state_t *s, mw_pkt_state_t *pkt)
 {
@@ -403,6 +419,9 @@ __mws_process_pkt_state(mw_state_t *s, mw_pkt_state_t *pkt)
 		__mws_set_rat_id(s, tmp, guid);
 		return;
 	}
+
+	if (__mws_is_local_occupying_cell(s, x, y))
+		; /* TODO: Resolve collision based on CRT */
 
 	mwr_set_xpos(r, x);
 	mwr_set_ypos(r, y);
