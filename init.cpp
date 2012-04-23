@@ -99,7 +99,28 @@ MazeInit(int argc, char	**argv)
 
 	InitDisplay(argc, argv);
 
-	NewPosition(M);
+	if (argc >= 5) {
+		M->xlocIs(Loc(atoi(argv[2])));
+		M->ylocIs(Loc(atoi(argv[3])));
+		switch (argv[4][0]) {
+		case 'n':
+			M->dirIs(NORTH);
+			break;
+		case 's':
+			M->dirIs(SOUTH);
+			break;
+		case 'e':
+			M->dirIs(EAST);
+			break;
+		case 'w':
+			M->dirIs(WEST);
+			break;
+		default:
+			break;
+		}
+	} else {
+		NewPosition(M);
+	}
 
 	printf("%d X LOC \n",M->xloc().value());
 	/*
