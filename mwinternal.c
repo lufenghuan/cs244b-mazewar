@@ -9,9 +9,11 @@
 /* See: http://humblesblog.blogspot.com/2011/11/htonll-64bit-host-to-network-conversion.html */
 #if __BYTE_ORDER == __BIG_ENDIAN
 # define HTONLL02(x) (x)
+# define NTOHLL02(x) (x)
 #else
 # if __BYTE_ORDER == __LITTLE_ENDIAN
 #  define HTONLL02(x) (((uint64_t)htonl((uint32_t)x))<<32 | htonl((uint32_t)(x>>32)))
+#  define NTOHLL02(x) (((uint64_t)ntohl((uint32_t)x))<<32 | ntohl((uint32_t)(x>>32)))
 # endif
 #endif
 
@@ -231,6 +233,51 @@ mw_hton_pkt_leaving(mw_pkt_leaving_t *pkt)
 {
 	mw_hton_pkt_header(&pkt->mwpl_header);
 	pkt->mwpl_leaving_guid = HTONLL02(pkt->mwpl_leaving_guid);
+}
+
+void
+mw_ntoh_pkt_header(mw_pkt_header_t *pkt)
+{
+	pkt->mwph_guid  = NTOHLL02(pkt->mwph_guid);
+	pkt->mwph_seqno = NTOHLL02(pkt->mwph_seqno);
+}
+
+void
+mw_ntoh_pkt_state(mw_pkt_state_t *pkt)
+{
+	mw_ntoh_pkt_header(&pkt->mwps_header);
+	pkt->mwps_rat_posdir     = ntohl(pkt->mwps_rat_posdir);
+	pkt->mwps_missile_posdir = ntohl(pkt->mwps_missile_posdir);
+	pkt->mwps_score          = ntohl(pkt->mwps_score);
+	pkt->mwps_crt            = NTOHLL02(pkt->mwps_crt);
+}
+
+void
+mw_ntoh_pkt_nickname(mw_pkt_nickname_t *pkt)
+{
+	mw_ntoh_pkt_header(&pkt->mwpn_header);
+}
+
+void
+mw_ntoh_pkt_tagged(mw_pkt_tagged_t *pkt)
+{
+	mw_ntoh_pkt_header(&pkt->mwpt_header);
+	pkt->mwpt_shooter_guid = NTOHLL02(pkt->mwpt_shooter_guid);
+}
+
+void
+mw_ntoh_pkt_ack(mw_pkt_ack_t *pkt)
+{
+	mw_ntoh_pkt_header(&pkt->mwpa_header);
+	pkt->mwpa_guid  = NTOHLL02(pkt->mwpa_guid);
+	pkt->mwpa_seqno = NTOHLL02(pkt->mwpa_seqno);
+}
+
+void
+mw_ntoh_pkt_leaving(mw_pkt_leaving_t *pkt)
+{
+	mw_ntoh_pkt_header(&pkt->mwpl_header);
+	pkt->mwpl_leaving_guid = NTOHLL02(pkt->mwpl_leaving_guid);
 }
 
 void

@@ -239,6 +239,12 @@ void     mw_hton_pkt_nickname(mw_pkt_nickname_t *pkt);
 void     mw_hton_pkt_tagged(mw_pkt_tagged_t *pkt);
 void     mw_hton_pkt_ack(mw_pkt_ack_t *pkt);
 void     mw_hton_pkt_leaving(mw_pkt_leaving_t *pkt);
+void     mw_ntoh_pkt_header(mw_pkt_header_t *pkt);
+void     mw_ntoh_pkt_state(mw_pkt_state_t *pkt);
+void     mw_ntoh_pkt_nickname(mw_pkt_nickname_t *pkt);
+void     mw_ntoh_pkt_tagged(mw_pkt_tagged_t *pkt);
+void     mw_ntoh_pkt_ack(mw_pkt_ack_t *pkt);
+void     mw_ntoh_pkt_leaving(mw_pkt_leaving_t *pkt);
 void     mw_posdir_pack(uint32_t *posdir, mw_pos_t x, mw_pos_t y,
                         mw_dir_t dir);
 void     mw_posdir_unpack(uint32_t posdir, mw_pos_t *x, mw_pos_t *y,
