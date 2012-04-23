@@ -46,8 +46,39 @@ platform (i.e. a small LAN linked by ethernet). How does it scale for an
 increased number of players? What if it is played across a WAN? Or if
 played on a network with different capacities?
 
+Testing has proven that the protocol works very well on a small LAN
+linked by ethernet, or even a highly congested WiFi network. It was
+tested in a conference environment with 200+ people using a particular
+WiFi access point and despite have many packets being dropped, the game
+was still very playable.
+
+I think the protocol might break down over the WAN because the latencies
+would grow to much larger values. Thus, it would be tough to maintain a
+globally consistent state between all the players without more local
+processing. For example, each change in position of a missile does not
+have to be sent over the network. Given the initial position, its future
+positions could be extrapolated locally on the client.
+
+The protocol should work just fine on networks with different
+capacities, given that the networks are somewhat reliable. It would be
+difficult to play on a network where most of the packets are dropped,
+although any network with "good enough" successful transmission rate and
+latency should work.
+
 \item Evaluate your design for consistency. What local or global
 inconsistencies can occur? How are they dealt with?
+
+It is possible for local inconsistencies to occur with there is a severe
+amount of packet loss. During testing we found that missiles would
+sometime fly through other players as a result of dropped packets. The
+global state generally stays sufficiently consistent between all clients
+as a result of each client sending it's absolute information with each
+state packet. So a client just needs to receive a single recent packet
+to bring it's local state in sync with that remote clients state.
+
+Another inconsistency that can occur is GUID collisions. This is simply
+dealt with by using the fact that it is impractical for two random
+64-bit values to collide given a sufficiently random PRNG.
 
 \item Evaluate your design for security. What happens if there are
 malicious users?
