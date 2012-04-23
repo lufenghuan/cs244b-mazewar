@@ -1,0 +1,55 @@
+Introduction
+============
+
+CS244B Mazewar is a distributed, multiplayer game that allows each
+player to control a rat in a maze. A player received points for tagging
+other rats with a projectile and loses points for being tagged.
+
+The game is based on the X Window System version of Mazewar, which is in
+turn based on the classic game of Mazewar that ran on the Xerox Alto in
+the 1970s. It is also based on Amaze, a multi-player game with a
+distributed implementation on top of the V kernel.
+
+Files
+=====
+
+ * Documentation/protocol.[pdf|tex]
+    - The design document describing the protocol used for implementing
+      communication between different Mazewar clients.
+
+ * Documentation/Changlog
+    - Changes to the protocol document that were made after the initial
+      protocol specification was submitted.
+
+ * Documentation/answers.[pdf|tex]
+    - Questions and answers regarding the design and implementation of
+      the final Mazewar Specification.
+
+ * list.h
+    - Generic doubly linked list implementation borrowed from the Linux
+      Kernel.
+
+ * mwexternal.h
+    - The defined external interface for the mw_state_t class.
+
+ * mwinternal.[c|h]
+    - The internal declarations for all of the custom objects and
+      methods. This provides the following object that are used in this
+      implementation:
+       + mw_state_t
+       + mw_rat_t
+       + mw_missile_t
+       + mw_pkt_state_t
+       + mw_pkt_nickname_t
+       + mw_pkt_tagged_t
+       + mw_pkt_ack_t
+       + mw_pkt_leaving_t
+
+ * mwmissile.c
+    - Implementation of the mw_missile_t methods.
+
+ * mwrat.c
+    - Implementation of the mw_rat_t methods.
+
+ * mwstate.c
+    - Implementation of the mw_state_t methods.
