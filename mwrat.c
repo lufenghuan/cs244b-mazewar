@@ -860,7 +860,7 @@ mwr_process_ack_pkt(mw_rat_t *r, mw_seqno_t acked_seqno)
 		list_for_each_entry_safe(e, n, &r->mwr_tagged_pkt_list,
 		                         mwtple_list) {
 			if (acked_seqno ==
-			    e->mwtple_pkt->mwpt_header.mwph_seqno) {
+			    NTOHLL02(e->mwtple_pkt->mwpt_header.mwph_seqno)) {
 				/* We're receive an ACK for this seqno,
 				 * se we no longer need to retransmit
 				 * this packet. Thus, remove it from the

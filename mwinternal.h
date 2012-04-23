@@ -32,6 +32,17 @@ extern BitCell missile[1];
 # define ASSERT(x)
 #endif
 
+/* See: http://humblesblog.blogspot.com/2011/11/htonll-64bit-host-to-network-conversion.html */
+#if __BYTE_ORDER == __BIG_ENDIAN
+# define HTONLL02(x) (x)
+# define NTOHLL02(x) (x)
+#else
+# if __BYTE_ORDER == __LITTLE_ENDIAN
+#  define HTONLL02(x) (((uint64_t)htonl((uint32_t)x))<<32 | htonl((uint32_t)(x>>32)))
+#  define NTOHLL02(x) (((uint64_t)ntohl((uint32_t)x))<<32 | ntohl((uint32_t)(x>>32)))
+# endif
+#endif
+
 typedef enum {
 	MWS_PHASE_DISCOVERY,
 	MWS_PHASE_ACTIVE

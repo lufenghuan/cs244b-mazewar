@@ -6,17 +6,6 @@
 
 #include <stdio.h>
 
-/* See: http://humblesblog.blogspot.com/2011/11/htonll-64bit-host-to-network-conversion.html */
-#if __BYTE_ORDER == __BIG_ENDIAN
-# define HTONLL02(x) (x)
-# define NTOHLL02(x) (x)
-#else
-# if __BYTE_ORDER == __LITTLE_ENDIAN
-#  define HTONLL02(x) (((uint64_t)htonl((uint32_t)x))<<32 | htonl((uint32_t)(x>>32)))
-#  define NTOHLL02(x) (((uint64_t)ntohl((uint32_t)x))<<32 | ntohl((uint32_t)(x>>32)))
-# endif
-#endif
-
 /* Source: www.gnu.org/softwar/libc/manual/html_node/Elapsed-Time.html */
 void
 mw_timeval_difference(struct timeval *diff,
