@@ -10,7 +10,15 @@
 typedef struct mw_rat_list_ent {
 	struct list_head  mwrle_list;
 	mw_rat_t         *mwrle_rat;
+	struct timeval    mwrle_timeout;
 } mw_rat_list_ent_t;
+
+static void
+__mws_init_rat_list_ent_timeout(struct timeval *timeout)
+{
+	timeout->tv_sec  = 10;
+	timeout->tv_usec = 0;
+}
 
 static mw_rat_list_ent_t *
 __mws_get_rat_list_ent(mw_state_t *s, mw_guid_t id)
@@ -152,9 +160,10 @@ mws_add_rat(mw_state_t *s, mw_guid_t *id,
 
 	mwr_set_addr(r, s->mws_mcast_addr, s->mws_mcast_socket);
 
+	__mws_init_rat_list_ent_timeout(&e->mwrle_timeout);
 	e->mwrle_rat = r;
-	list_add_tail(&e->mwrle_list, &s->mws_rat_list);
 
+	list_add_tail(&e->mwrle_list, &s->mws_rat_list);
 	return rc;
 
 err_rat:
@@ -195,16 +204,38 @@ __mws_update_rats(mw_state_t *s)
 }
 
 static void
-__mws_update_elapsedtime(mw_state_t *s)
+__mws_update_timevals(mw_state_t *s)
 {
 	struct timeval curtime, diff;
+	mw_rat_list_ent_t *e;
 
 	gettimeofday(&curtime, NULL);
 
 	mw_timeval_difference(&diff, &curtime, &s->mws_lasttime);
 	mw_timeval_sum(&s->mws_elapsedtime, &s->mws_elapsedtime, &diff);
 
+	list_for_each_entry(e, &s->mws_rat_list, mwrle_list) {
+		mw_timeval_difference(&e->mwrle_timeout,
+		                      &e->mwrle_timeout, &diff);
+	}
+
 	gettimeofday(&s->mws_lasttime, NULL);
+}
+
+static void
+__mws_evict_dead_peers(mw_state_t *s)
+{
+	mw_rat_list_ent_t *e, *n;
+	list_for_each_entry_safe(e, n, &s->mws_rat_list, mwrle_list) {
+		if (mwr_cmp_id(e->mwrle_rat, s->mws_local_rat_id) == 0)
+			continue; /* Can't evict local rat */
+
+		if (mw_timeval_timeout_triggered(&e->mwrle_timeout)) {
+			list_del(&e->mwrle_list);
+			mwr_dest(e->mwrle_rat);
+			free(e);
+		}
+	}
 }
 
 static void
@@ -240,7 +271,7 @@ mws_update(mw_state_t *s)
 {
 	ASSERT(s->mws_maze != NULL);
 
-	__mws_update_elapsedtime(s);
+	__mws_update_timevals(s);
 
 	if (s->mws_phase == MWS_PHASE_DISCOVERY) {
 		if (s->mws_elapsedtime.tv_sec >= SECS_IN_PHASE_DISCOVERY) {
@@ -251,6 +282,8 @@ mws_update(mw_state_t *s)
 		__mws_update_rats(s);
 		__mws_check_for_tagging(s);
 	}
+
+	__mws_evict_dead_peers(s);
 }
 
 int
@@ -434,10 +467,20 @@ __mws_process_pkt_ack(mw_state_t *s, mw_pkt_ack_t *pkt)
 void
 mws_receive_pkt(mw_state_t *s, mw_pkt_header_t *pkt)
 {
+	mw_rat_list_ent_t *e;
+
 	/* TODO: Must swab pkt before processing it */
 
 	if (s->mws_local_rat_id == pkt->mwph_guid)
 		return; /* Ignore our own local rat's packets */
+
+	/* To ensure a list entry doesn't timeout, we need to
+	 * reinitialize the timeout when a packet from that rat is
+	 * received.
+	 */
+	e = __mws_get_rat_list_ent(s, pkt->mwph_guid);
+	if (e != NULL) /* XXX: No ent for this guid? */
+		__mws_init_rat_list_ent_timeout(&e->mwrle_timeout);
 
 	switch (pkt->mwph_descriptor) {
 	case MW_PKT_HDR_DESCRIPTOR_STATE:
