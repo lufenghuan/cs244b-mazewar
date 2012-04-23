@@ -24,24 +24,21 @@ int main(int argc, char *argv[])
     Loc x(1);
     Loc y(5);
     Direction dir(0);
-    char        *ratName, *mazeName;
+    char        *ratName;
 
 	signal(SIGHUP, quit);
 	signal(SIGINT, quit);
 	signal(SIGTERM, quit);
 
-    getName("Welcome to CS244B MazeWar!\n\nYour Name", &ratName);
-	getString("Maze Name", &mazeName);
+	if (argc >= 2)
+		ratName = strdup(argv[1]);
+	else
+		getName("Welcome to CS244B MazeWar!\n\nYour Name", &ratName);
+
 	M = MazewarInstance::mazewarInstanceNew(string(ratName));
 	MazewarInstance* a = M.ptr();
 	strncpy(M->myName_, ratName, NAMESIZE);
-    free(ratName);
-
-    /* since this sample only deals with a local version, we ignore
-       mazeName for now.  We also don't need any calls to getHostName,
-       because we're not going out over the net for anything.
-     */
-        free(mazeName);
+	free(ratName);
 
 	MazeInit(argc, argv);
 
