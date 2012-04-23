@@ -183,6 +183,9 @@ static BitCell empty = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
 void
 mwr_render_wipe(const mw_rat_t *r)
 {
+	if (!r->mwr_is_local)
+		return;
+
 	if (r->mwr_missile != NULL)
 		mwm_render_wipe(r->mwr_missile);
 
@@ -192,6 +195,9 @@ mwr_render_wipe(const mw_rat_t *r)
 void
 mwr_render_draw(const mw_rat_t *r)
 {
+	if (!r->mwr_is_local)
+		goto draw_score;
+
 	if (r->mwr_missile != NULL)
 		mwm_render_draw(r->mwr_missile);
 
@@ -199,6 +205,7 @@ mwr_render_draw(const mw_rat_t *r)
 	HackMazeBitmap(Loc(r->mwr_x_pos), Loc(r->mwr_y_pos),
 	               &normalArrows[r->mwr_dir]);
 
+draw_score:
 	/* Draw rat's score and name on the scorecard */
 	UpdateScoreCardWithNameAndScore(r->mwr_mw_index,
 	                                r->mwr_name, r->mwr_score);
