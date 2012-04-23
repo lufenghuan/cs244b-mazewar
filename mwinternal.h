@@ -26,7 +26,11 @@
 extern BitCell normalArrows[NDIRECTION];
 extern BitCell missile[1];
 
-#define ASSERT(x) assert((x))
+#if 0
+# define ASSERT(x) assert((x))
+#else
+# define ASSERT(x)
+#endif
 
 typedef enum {
 	MWS_PHASE_DISCOVERY,
